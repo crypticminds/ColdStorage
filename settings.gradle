@@ -1,2 +1,2 @@
-include ':app', ':coldstoragecache'
+include ':coldstoragecache'
 rootProject.name='ColdStorage'
