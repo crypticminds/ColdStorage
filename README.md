@@ -1,9 +1,9 @@
 
-# ColdStorage
+# ColdStorage [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A lightweight caching library for android written in Kotlin.
+**A lightweight caching library for android written in Kotlin.**
 
-## Usage
+## Basic Usage
 
 Add the library to your build.gradle file
 
@@ -44,7 +44,7 @@ implementation 'com.github.crypticminds:ColdStorage:1.0.1'
     
 
    
- Create your cache layer by extending the Cache class. You will have to implement the update method.
+ Create your cache layer by extending the **Cache class**. You will have to implement the update method.
  The update method should take care of fetching the data when the data is stale or is not present in the cache.
  
 
@@ -104,6 +104,7 @@ implementation 'com.github.crypticminds:ColdStorage:1.0.1'
 Your cache is now ready. To use the cache create an instance of it and call the **get** method of the cache.
 
 The get method accepts the key that needs to be fetched from the cache and a callback which will be used to return the result to the main thread. **The cache performs all operations in a background thread and will never block the UI thread.**
+You will need to implement the **OnValueFetchedCallback** interface and pass it to the **get** method of the cache. The cache will fetch the value and pass it to the callback method from where you can access it and use in the UI thread.
 
 Optionally you can also pass a time to live value and a converter. They are explained in detail below.
 
@@ -188,5 +189,12 @@ Optionally you can also pass a time to live value and a converter. They are expl
 **The converter object takes care of deserializing the string into the object you need. It is an optional parameter. If the converter is not passed the cache will return the value as string.**
 
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Other usage
+
+* You can update the cache manually using the **addToCache** method. Use this method if you need to update the cache from a sperate async task . You will need to pass the key , and the value (the value needs to be serializable). You can also pass an optional time to live value.
+* You can persist your application cache into the shared preferences for future use by calling the method **commitToSharedPref** . 
+* You can fetch the data from cache without it internally calling the update method if the data is stale or missing by using the method **getWithoutUpdate** . If you are using this method then you do not have to implement the update method of your cache. You will also have to manually fetch the data and update the cache using **addToCache** method when there is a cache miss.
+
+
+
 
