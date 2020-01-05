@@ -12,7 +12,7 @@ import com.arcane.coldstoragecache.converter.IConverter
  *
  * @author Anurag
  */
-class StringToBitmapConverter : IConverter<Any?> {
+class StringToBitmapConverter : IConverter<Bitmap?> {
 
     /**
      * The function will convert the string stored in the cache

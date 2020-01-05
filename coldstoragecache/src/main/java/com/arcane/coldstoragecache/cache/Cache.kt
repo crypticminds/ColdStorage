@@ -211,10 +211,10 @@ abstract class Cache {
      * needs to be considered stale.(In milliseconds)
      *
      */
-    fun get(
+    fun <Output> get(
         key: String,
-        onValueFetchedCallback: OnValueFetchedCallback<Any?>,
-        converter: IConverter<Any?>,
+        onValueFetchedCallback: OnValueFetchedCallback<Output?>,
+        converter: IConverter<Output?>,
         timeToLive: Long? = null
     ) {
         thread {
@@ -275,7 +275,7 @@ abstract class Cache {
      *
      * @param timeToLive the time after which the object will be considered stale.
      */
-    fun addToCache(key: String, objectToCache: Any, timeToLive: Long?) {
+    fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
         val objectAsString = objectMapper.writeValueAsString(objectToCache)
         cache[key] = CachedDataModel(
             objectAsString,

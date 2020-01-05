@@ -11,7 +11,7 @@ import com.arcane.coldstorage.cache.ImageCache
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.impl.StringToBitmapConverter
 
-class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Any?> {
+class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
 
     companion object {
         val URLS = arrayListOf(
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Any?> {
      * When the image is downloaded , adding the image to
      * the image view.
      */
-    override fun valueFetched(output: Any?) {
+    override fun valueFetched(output: Bitmap?) {
         imageCache.commitToSharedPref(applicationContext)
         runOnUiThread {
             val outputAsBitmap = output as Bitmap
