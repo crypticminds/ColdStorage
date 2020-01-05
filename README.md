@@ -1,3 +1,4 @@
+
 # ColdStorage
 
 A lightweight caching library for android written in Kotlin.
@@ -15,28 +16,21 @@ implementation 'com.github.crypticminds:ColdStorage:1.0.1'
  
  -  Create an application class and initialize the cache in the onCreate() method.
  
-
+	    import android.app.Application
+	    import com.arcane.coldstoragecache.cache.Cache
     
-    import android.app.Application
-    import com.arcane.coldstoragecache.cache.Cache
+	    class Application : Application() {
     
-    class Application : Application() {
-    
-        /**
-         * The cache needs to be initialized here allowing the
-         * cache to pull any available data from shared preference and
-         * load it into the memory.
-         */
         override fun onCreate() {
             super.onCreate()
             Cache.initialize(context = applicationContext)
-        }
+	        }
     
-    }
+	    }
+
 -  Register your application in the android manifest file by providing the **android:name** attribute
 
-
-    <application
+```<application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -44,15 +38,15 @@ implementation 'com.github.crypticminds:ColdStorage:1.0.1'
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             android:name=".application.Application">
-    	
-    </application>application>
- Create your cache layer by implementing the Cache class. You will have to implement the update method.
+    </application>
+```
+    
+
+   
+ Create your cache layer by extending the Cache class. You will have to implement the update method.
  The update method should take care of fetching the data when the data is stale or is not present in the cache.
  
- 
 
- 
-    
     import android.graphics.Bitmap
     import android.graphics.BitmapFactory
     import android.util.Base64
@@ -194,7 +188,4 @@ Optionally you can also pass a time to live value and a converter. They are expl
 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
-
 
