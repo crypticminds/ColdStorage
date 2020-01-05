@@ -30,7 +30,8 @@ implementation 'com.github.crypticminds:ColdStorage:1.0.1'
 
 -  Register your application in the android manifest file by providing the **android:name** attribute
 
-```<application
+```
+<application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -182,7 +183,7 @@ Optionally you can also pass a time to live value and a converter. They are expl
     }
     
 
-**The rime to  live value in the get method to specify how long a data needs to be stored in the cache.**
+**The time to  live value in the get method to specify how long a data needs to be stored in the cache.**
 
 **The converter object takes care of deserializing the string into the object you need. It is an optional parameter. If the converter is not passed the cache will return the value as string.**
 
