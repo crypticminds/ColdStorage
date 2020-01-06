@@ -28,6 +28,7 @@ class CacheTest {
         every { Log.d(any(), any()) } returns 0
         every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
+        cacheWithString.clearCache()
     }
 
     @Test
@@ -75,8 +76,31 @@ class CacheTest {
             } else {
                 Assert.assertNull(value)
             }
-
         }
+    }
+
+    @Test
+    fun testCommitToSharedPreferences() {
+        val allMap = hashMapOf<String, String>()
+        val applicationContext = Mockito.mock(Context::class.java)
+        val sharedPreferences = Mockito.mock(SharedPreferences::class.java)
+        val editor = Mockito.mock(SharedPreferences.Editor::class.java)
+        Mockito.`when`(
+            applicationContext.getSharedPreferences(
+                Mockito.anyString(),
+                Mockito.anyInt()
+            )
+        ).thenReturn(sharedPreferences)
+        Mockito.`when`(sharedPreferences.edit()).thenReturn(editor)
+        Mockito.`when`(editor.putString(Mockito.anyString(), Mockito.anyString()))
+            .thenReturn(editor)
+        Mockito.doNothing().`when`(editor).apply()
+        mockDataInSharedPref(sharedPreferences, allMap)
+        Cache.initialize(applicationContext)
+        Thread.sleep(500)
+        cacheWithString.commitToSharedPref(applicationContext)
+        Mockito.verify(sharedPreferences, Mockito.times(5))
+            .edit()
     }
 
 

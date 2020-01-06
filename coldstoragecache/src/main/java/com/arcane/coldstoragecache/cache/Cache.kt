@@ -90,26 +90,13 @@ abstract class Cache {
 
                 //removing stale objects from the cache
                 cachedData.forEach { key ->
-                    val current = System.currentTimeMillis()
                     val cachedDataModel = objectMapper.readValue(
                         sharedPreferences.getString(key, ""),
                         CachedDataModel::class.java
                     )
-                    if (cachedDataModel.timeToLive != null) {
-                        val difference = current - cachedDataModel.timestamp
-                        if (difference < cachedDataModel.timeToLive) {
-                            cache[key] = cachedDataModel
-                        }
-                    } else if (maxTimeToLive != null) {
-                        val differenceGlobal = current - cachedDataModel.timestamp
-                        if (differenceGlobal < maxTimeToLive!!) {
-                            cache[key] = cachedDataModel
-                        }
-                    } else {
+                    if (!isDataStale(cachedDataModel)) {
                         cache[key] = cachedDataModel
                     }
-
-                    trimData()
                 }
             }
         }
@@ -139,6 +126,34 @@ abstract class Cache {
                 }
             }
 
+
+        }
+
+        /**
+         * Method that checks if the data is stale.
+         *
+         * @param cachedDataModel the cached data.
+         */
+        private fun isDataStale(cachedDataModel: CachedDataModel): Boolean {
+            val current = System.currentTimeMillis()
+            if (cachedDataModel.timeToLive != null) {
+                val difference = current - cachedDataModel.timestamp
+                if (difference > cachedDataModel.timeToLive) {
+                    Log.i("COLD_STORAGE", "Cache miss due to stale data")
+                    return true
+                }
+                return false
+            } else if (maxTimeToLive != null) {
+                val differenceGlobal = current - cachedDataModel.timestamp
+                if (differenceGlobal > maxTimeToLive!!) {
+                    Log.i("COLD_STORAGE", "Cache miss due to stale data")
+                    return true
+                }
+                Log.i("COLD_STORAGE", "Cache hit")
+                return false
+            }
+            Log.i("COLD_STORAGE", "Cache hit")
+            return false
 
         }
 
@@ -256,9 +271,12 @@ abstract class Cache {
     fun commitToSharedPref(context: Context) {
         val sharedPreferences = context
             .getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        trimData()
         cache.forEach { entry ->
-            val stringValue = objectMapper.writeValueAsString(entry.value)
-            sharedPreferences.edit().putString(entry.key, stringValue).apply()
+            if (!isDataStale(entry.value)) {
+                val stringValue = objectMapper.writeValueAsString(entry.value)
+                sharedPreferences.edit().putString(entry.key, stringValue).apply()
+            }
         }
     }
 
@@ -311,33 +329,6 @@ abstract class Cache {
         return null
     }
 
-    /**
-     * Method that checks if the data is stale.
-     *
-     * @param cachedDataModel the cached data.
-     */
-    private fun isDataStale(cachedDataModel: CachedDataModel): Boolean {
-        val current = System.currentTimeMillis()
-        if (cachedDataModel.timeToLive != null) {
-            val difference = current - cachedDataModel.timestamp
-            if (difference > cachedDataModel.timeToLive) {
-                Log.i("COLD_STORAGE", "Cache miss due to stale data")
-                return true
-            }
-            return false
-        } else if (maxTimeToLive != null) {
-            val differenceGlobal = current - cachedDataModel.timestamp
-            if (differenceGlobal > maxTimeToLive!!) {
-                Log.i("COLD_STORAGE", "Cache miss due to stale data")
-                return true
-            }
-            Log.i("COLD_STORAGE", "Cache hit")
-            return false
-        }
-        Log.i("COLD_STORAGE", "Cache hit")
-        return false
-
-    }
 
     /**
      * Method to fetch the data from the cache.
@@ -357,9 +348,20 @@ abstract class Cache {
     }
 
     /**
+     * Method to clear the cache.
+     */
+    fun clearCache() {
+        cache.clear()
+    }
+
+    /**
      * The update function needs to be implemented. This method should
      * specify from where the data needs to be fetched if the key is
      * not found inside the cache.
+     *
+     * @param key the key for which the value was not found in the cache.
+     *
+     * @return the serialized value.
      */
     abstract fun update(key: String): String?
 }
