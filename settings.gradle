@@ -1,2 +1,2 @@
-include ':coldstoragecache'
+include ':coldstoragecache', ':annotationprocessor', ':coldstorageannotaions'
 rootProject.name='ColdStorage'

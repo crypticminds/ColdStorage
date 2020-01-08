@@ -28,12 +28,12 @@ class CacheTest {
         every { Log.d(any(), any()) } returns 0
         every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
-        cacheWithString.clearCache()
+        Cache.clearCache()
     }
 
     @Test
     fun testGetFromCacheWithCacheHit() {
-        cacheWithString.addToCache(testKey, "testValue")
+        Cache.addToCache(testKey, "testValue")
         val onValueFetchedCallback = object : OnValueFetchedCallback<String?> {
             override fun valueFetched(output: String?) {
                 Assert.assertNotNull(output)

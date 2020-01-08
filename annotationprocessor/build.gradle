@@ -1,0 +1,13 @@
+apply plugin: 'java-library'
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(path: ':coldstorageannotaions')
+
+
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"

@@ -125,8 +125,6 @@ abstract class Cache {
                     break
                 }
             }
-
-
         }
 
         /**
@@ -134,7 +132,7 @@ abstract class Cache {
          *
          * @param cachedDataModel the cached data.
          */
-        private fun isDataStale(cachedDataModel: CachedDataModel): Boolean {
+        fun isDataStale(cachedDataModel: CachedDataModel): Boolean {
             val current = System.currentTimeMillis()
             if (cachedDataModel.timeToLive != null) {
                 val difference = current - cachedDataModel.timestamp
@@ -155,6 +153,48 @@ abstract class Cache {
             Log.i("COLD_STORAGE", "Cache hit")
             return false
 
+        }
+
+        /**
+         * Method to clear the cache.
+         */
+        fun clearCache() {
+            cache.clear()
+        }
+
+        /**
+         * Method that can be used to cache an object if the get method is not used
+         * directly.This can be used when the data fetching logic cannot be implemented
+         * inside the update method or the cache needs to be updated
+         * from a different async process.
+         *
+         * @param key the key for which the object needs to be cached
+         *
+         * @param objectToCache the object that needs to be cached.This object
+         * should be serializable so that it can be converted to a string.
+         *
+         * @param timeToLive the time after which the object will be considered stale.
+         */
+        fun <Value> addToCache(key: String, objectToCache: Value, timeToLive: Long? = null) {
+            val objectAsString = objectMapper.writeValueAsString(objectToCache)
+            cache[key] = CachedDataModel(
+                objectAsString,
+                System.currentTimeMillis(), timeToLive
+            )
+        }
+
+        /**
+         * Method to get a value from the cache.
+         *
+         * @param key The key for which the value is fetched.
+         * If the key is not present in the cache null is returned.
+         */
+        fun get(key: String): CachedDataModel? {
+            return if (cache.containsKey(key)) {
+                cache[key]
+            } else {
+                null
+            }
         }
 
     }
@@ -280,26 +320,6 @@ abstract class Cache {
         }
     }
 
-    /**
-     * Method that can be used to cache an object if the get method is not used
-     * directly.This can be used when the data fetching logic cannot be implemented
-     * inside the update method or the cache needs to be updated
-     * from a different async process.
-     *
-     * @param key the key for which the object needs to be cached
-     *
-     * @param objectToCache the object that needs to be cached.This object
-     * should be serializable so that it can be converted to a string.
-     *
-     * @param timeToLive the time after which the object will be considered stale.
-     */
-    fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
-        val objectAsString = objectMapper.writeValueAsString(objectToCache)
-        cache[key] = CachedDataModel(
-            objectAsString,
-            System.currentTimeMillis(), timeToLive
-        )
-    }
 
     /**
      * Method that will return the value from cache if present but it will
@@ -348,10 +368,25 @@ abstract class Cache {
     }
 
     /**
-     * Method to clear the cache.
+     * Method that can be used to cache an object if the get method is not used
+     * directly.This can be used when the data fetching logic cannot be implemented
+     * inside the update method or the cache needs to be updated
+     * from a different async process.
+     *
+     * @param key the key for which the object needs to be cached
+     *
+     * @param objectToCache the object that needs to be cached.This object
+     * should be serializable so that it can be converted to a string.
+     *
+     * @param timeToLive the time after which the object will be considered stale.
      */
-    fun clearCache() {
-        cache.clear()
+    @Deprecated("Use the static method in place of this.")
+    fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
+        val objectAsString = objectMapper.writeValueAsString(objectToCache)
+        cache[key] = CachedDataModel(
+            objectAsString,
+            System.currentTimeMillis(), timeToLive
+        )
     }
 
     /**
