@@ -1,5 +1,6 @@
 package com.arcane.coldstorage.application
 
+//Add this line in the import.The class will be generated during code compilation.
 import android.app.Application
 import com.arcane.coldstoragecache.cache.Cache
 
@@ -12,7 +13,7 @@ class Application : Application() {
      */
     override fun onCreate() {
         super.onCreate()
-        Cache.initialize(context = applicationContext)
+        Cache.initialize(applicationContext)
     }
 
 }

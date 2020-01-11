@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.arcane.coldstorage.cache.ImageCache
+import com.arcane.coldstorageannotations.annotation.Refrigerate
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.impl.StringToBitmapConverter
 
@@ -15,10 +16,15 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
 
     companion object {
         val URLS = arrayListOf(
-            "https://images.unsplash.com/photo-1452857297128-d9c29adba80b?ixlib=rb-1.2.1&w=1000&q=80",
-            "https://i.ytimg.com/vi/Pc20_oJQusc/maxresdefault.jpg",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1HHodR1IgMESyE95LqwLRTRFnfCpmKKw5RQHqnP_kWV9ugKaiIQ&s"
+                "https://images.unsplash.com/photo-1452857297128-d9c29adba80b?ixlib=rb-1.2.1&w=1000&q=80",
+                "https://i.ytimg.com/vi/Pc20_oJQusc/maxresdefault.jpg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1HHodR1IgMESyE95LqwLRTRFnfCpmKKw5RQHqnP_kWV9ugKaiIQ&s"
         )
+
+        @Refrigerate(operation = "TEST")
+        fun testThisMethod(): String {
+            return "foo"
+        }
     }
 
     /**
@@ -70,9 +76,9 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     private fun checkImageCaching() {
         val converter = StringToBitmapConverter()
         imageCache.get(
-            URLS.shuffled().take(1)[0],
-            this,
-            converter
+                URLS.shuffled().take(1)[0],
+                this,
+                converter
         )
 
     }
@@ -88,4 +94,17 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
             imageView.setImageBitmap(outputAsBitmap)
         }
     }
+
+    @Refrigerate(operation = "DOWNLOAD_IMAGE")
+    fun testForannotationHerePOPO(a: String, b: String): Bitmap? {
+
+        return null
+
+    }
+
+    // @Refrigerate
+    fun abcd(c: String): String {
+        return "s"
+    }
+
 }

@@ -19,5 +19,5 @@ interface OnOperationSuccessfulCallback<Output> {
      * The result is passed into this function
      * when it is available.
      */
-    fun operationSuccessful(output: Output, operation: String)
+    fun onSuccess(output: Output, operation: String)
 }

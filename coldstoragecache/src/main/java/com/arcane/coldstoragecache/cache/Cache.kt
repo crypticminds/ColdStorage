@@ -40,7 +40,12 @@ abstract class Cache {
          * The in memory cache.
          */
         private val cache: ConcurrentHashMap<String, CachedDataModel> =
-            ConcurrentHashMap()
+                ConcurrentHashMap()
+
+        /**
+         * The generated map by the annotation processor.
+         */
+        private var generatedReferenceMap: Map<String, String> = hashMapOf()
 
         /**
          * The max amount of data that can be stored in app memory.
@@ -74,9 +79,9 @@ abstract class Cache {
          *
          */
         fun initialize(
-            context: Context,
-            maxAllocatedMemory: Int = 1024 * 1024 * 20,
-            timeToLive: Int? = null
+                context: Context,
+                maxAllocatedMemory: Int = 1024 * 1024 * 20,
+                timeToLive: Int? = null
         ) {
             maxAllocateCachedMemory = maxAllocatedMemory
             maxTimeToLive = timeToLive
@@ -84,17 +89,18 @@ abstract class Cache {
             //the UI thread.
             thread {
                 val sharedPreferences =
-                    context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                        context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 val cachedData =
-                    sharedPreferences.all.keys
+                        sharedPreferences.all.keys
 
                 //removing stale objects from the cache
                 cachedData.forEach { key ->
                     val cachedDataModel = objectMapper.readValue(
-                        sharedPreferences.getString(key, ""),
-                        CachedDataModel::class.java
+                            sharedPreferences.getString(key, ""),
+                            CachedDataModel::class.java
                     )
-                    if (!isDataStale(cachedDataModel)) {
+                    if (!isDataStale(cachedDataModel.timeToLive,
+                                    cachedDataModel.timestamp)) {
                         cache[key] = cachedDataModel
                     }
                 }
@@ -132,17 +138,17 @@ abstract class Cache {
          *
          * @param cachedDataModel the cached data.
          */
-        fun isDataStale(cachedDataModel: CachedDataModel): Boolean {
+        fun isDataStale(timeToLive: Long?, timestamp: Long): Boolean {
             val current = System.currentTimeMillis()
-            if (cachedDataModel.timeToLive != null) {
-                val difference = current - cachedDataModel.timestamp
-                if (difference > cachedDataModel.timeToLive) {
+            if (timeToLive != null) {
+                val difference = current - timestamp
+                if (difference > timeToLive) {
                     Log.i("COLD_STORAGE", "Cache miss due to stale data")
                     return true
                 }
                 return false
             } else if (maxTimeToLive != null) {
-                val differenceGlobal = current - cachedDataModel.timestamp
+                val differenceGlobal = current - timestamp
                 if (differenceGlobal > maxTimeToLive!!) {
                     Log.i("COLD_STORAGE", "Cache miss due to stale data")
                     return true
@@ -178,8 +184,8 @@ abstract class Cache {
         fun <Value> addToCache(key: String, objectToCache: Value, timeToLive: Long? = null) {
             val objectAsString = objectMapper.writeValueAsString(objectToCache)
             cache[key] = CachedDataModel(
-                objectAsString,
-                System.currentTimeMillis(), timeToLive
+                    objectAsString,
+                    System.currentTimeMillis(), timeToLive
             )
         }
 
@@ -191,7 +197,11 @@ abstract class Cache {
          */
         fun get(key: String): CachedDataModel? {
             return if (cache.containsKey(key)) {
-                cache[key]
+                if (isDataStale(cache[key]!!.timeToLive, cache[key]!!.timestamp)) {
+                    null
+                } else {
+                    cache[key]
+                }
             } else {
                 null
             }
@@ -220,9 +230,9 @@ abstract class Cache {
      *
      */
     fun get(
-        key: String,
-        onValueFetchedCallback: OnValueFetchedCallback<String?>,
-        timeToLive: Long? = null
+            key: String,
+            onValueFetchedCallback: OnValueFetchedCallback<String?>,
+            timeToLive: Long? = null
     ) {
         thread {
             val cachedData = fetchFromCache(key)
@@ -233,7 +243,7 @@ abstract class Cache {
             val result = update(key)
             if (result != null) {
                 val cachedDataModel =
-                    CachedDataModel(result, System.currentTimeMillis(), timeToLive)
+                        CachedDataModel(result, System.currentTimeMillis(), timeToLive)
                 cache[key] = cachedDataModel
                 onValueFetchedCallback.valueFetched(cachedDataModel.objectToCache)
                 return@thread
@@ -267,17 +277,17 @@ abstract class Cache {
      *
      */
     fun <Output> get(
-        key: String,
-        onValueFetchedCallback: OnValueFetchedCallback<Output?>,
-        converter: IConverter<Output?>,
-        timeToLive: Long? = null
+            key: String,
+            onValueFetchedCallback: OnValueFetchedCallback<Output?>,
+            converter: IConverter<Output?>,
+            timeToLive: Long? = null
     ) {
         thread {
             val cachedData = fetchFromCache(key)
             if (cachedData != null) {
                 onValueFetchedCallback.valueFetched(
-                    converter
-                        .convert(cachedData.objectToCache)
+                        converter
+                                .convert(cachedData.objectToCache)
                 )
                 return@thread
             }
@@ -285,12 +295,12 @@ abstract class Cache {
             val result = update(key)
             if (result != null) {
                 val cachedDataModel =
-                    CachedDataModel(result, System.currentTimeMillis(), timeToLive)
+                        CachedDataModel(result, System.currentTimeMillis(), timeToLive)
                 cache[key] = cachedDataModel
                 onValueFetchedCallback.valueFetched(
-                    converter.convert(
-                        cachedDataModel.objectToCache
-                    )
+                        converter.convert(
+                                cachedDataModel.objectToCache
+                        )
                 )
                 return@thread
             }
@@ -310,10 +320,10 @@ abstract class Cache {
      */
     fun commitToSharedPref(context: Context) {
         val sharedPreferences = context
-            .getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
         trimData()
         cache.forEach { entry ->
-            if (!isDataStale(entry.value)) {
+            if (!isDataStale(entry.value.timeToLive, entry.value.timestamp)) {
                 val stringValue = objectMapper.writeValueAsString(entry.value)
                 sharedPreferences.edit().putString(entry.key, stringValue).apply()
             }
@@ -337,7 +347,7 @@ abstract class Cache {
     fun getWithoutUpdate(key: String, converter: IConverter<Any?>? = null): Any? {
         if (cache.containsKey(key)) {
             //if data is stale null is returned.
-            if (isDataStale(cache[key]!!)) {
+            if (isDataStale(cache[key]!!.timeToLive, cache[key]!!.timestamp)) {
                 return null
             }
             val cachedString = cache[key]!!.objectToCache
@@ -358,7 +368,7 @@ abstract class Cache {
     private fun fetchFromCache(key: String): CachedDataModel? {
         return if (cache.containsKey(key)) {
             val cachedDataModel = cache[key]!!
-            if (isDataStale(cachedDataModel)) {
+            if (isDataStale(cachedDataModel.timeToLive, cachedDataModel.timestamp)) {
                 return null
             }
             return cachedDataModel
@@ -384,8 +394,8 @@ abstract class Cache {
     fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
         val objectAsString = objectMapper.writeValueAsString(objectToCache)
         cache[key] = CachedDataModel(
-            objectAsString,
-            System.currentTimeMillis(), timeToLive
+                objectAsString,
+                System.currentTimeMillis(), timeToLive
         )
     }
 

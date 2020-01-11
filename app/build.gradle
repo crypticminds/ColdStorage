@@ -1,8 +1,7 @@
-apply plugin: 'com.android.library'
-
+apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -10,6 +9,7 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 29
+        applicationId = "com.arcane.coldstorage"
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -27,6 +27,14 @@ android {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir.absolutePath}/generated/source/kaptKotlin/"
+        }
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -39,4 +47,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     androidTestImplementation 'org.mockito:mockito-core:2.19.0'
     implementation project(path: ':coldstoragecache')
+
+    compileOnly project(path: ':coldstorageannotations')
+    kapt project(':annotationprocessor')
 }

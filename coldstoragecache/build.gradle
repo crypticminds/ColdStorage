@@ -45,7 +45,7 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-core:2.19.0'
 
     //for annotation support
-    implementation project(path: ':coldstorageannotaions')
-    annotationProcessor project(path : ':annotationprocessor')
-    testAnnotationProcessor project(path : ':annotationprocessor')
+    implementation project(path: ':coldstorageannotations')
+    //annotationProcessor project(path : ':annotationprocessor')
+    //testAnnotationProcessor project(path : ':annotationprocessor')
 }
