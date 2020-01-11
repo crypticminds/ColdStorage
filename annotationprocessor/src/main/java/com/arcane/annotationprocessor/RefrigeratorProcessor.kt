@@ -53,6 +53,7 @@ class RefrigeratorProcessor : AbstractProcessor() {
 
     }
 
+    //TODO check preconditions.
     override fun process(annotations: MutableSet<out TypeElement>?,
                          roundEnvironment: RoundEnvironment?): Boolean {
         if (roundEnvironment == null) {
@@ -211,7 +212,7 @@ class RefrigeratorProcessor : AbstractProcessor() {
                         "\"${refrigerate.operation}\")")
                 .nextControlFlow("else")
                 .addStatement("$CALL_BACK_PARAMETER_NAME.onSuccess(" +
-                        "(\$T) Companion.get(\"something\"),\"${refrigerate.operation}\")", returnType)
+                        "(\$T) Companion.get(key),\"${refrigerate.operation}\")", returnType)
                 .endControlFlow()
                 .addAnnotation(Override::class.java).build()
 
