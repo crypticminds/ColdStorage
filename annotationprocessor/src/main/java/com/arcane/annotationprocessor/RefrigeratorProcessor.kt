@@ -20,6 +20,7 @@ import javax.tools.Diagnostic
 @AutoService(Processor::class) // For registering the service
 @SupportedSourceVersion(SourceVersion.RELEASE_8) // to support Java 8
 @SupportedAnnotationTypes("com.arcane.coldstorageannotations.annotation.Refrigerate")
+@SupportedOptions(RefrigeratorProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)
 class RefrigeratorProcessor : AbstractProcessor() {
 
     companion object {
@@ -63,6 +64,7 @@ class RefrigeratorProcessor : AbstractProcessor() {
         val cacheClass = ClassName.get(
                 "com.arcane.coldstoragecache.cache", "ColdStorage")
         val asyncTaskClass = ClassName.get("android.os", "AsyncTask")
+
         val generatedSourcesRoot: String = processingEnvironment
                 .options[KAPT_KOTLIN_GENERATED_OPTION_NAME].orEmpty()
         if (generatedSourcesRoot.isEmpty()) {

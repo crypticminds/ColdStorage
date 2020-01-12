@@ -3,8 +3,18 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'maven'
 
 
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir.absolutePath}/tmp/kapt/main/kotlinGenerated/"
+        }
+    }
+}
+
 dependencies {
-    implementation project(path: ':coldstorageannotations')
+    kapt project(path: ':coldstorageannotations')
+    compileOnly project(':coldstorageannotations')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
