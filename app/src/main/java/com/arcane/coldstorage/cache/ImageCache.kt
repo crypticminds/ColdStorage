@@ -13,6 +13,8 @@ import java.net.URL
  * An example class that is used to cache images
  * after downloading them from a given url.
  *
+ * @author Anurag
+ *
  */
 class ImageCache : Cache() {
 

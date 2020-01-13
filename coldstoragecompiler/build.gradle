@@ -1,0 +1,35 @@
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'maven'
+
+kapt {
+    generateStubs = true
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir.absolutePath}/tmp/kapt/main/kotlinGenerated/"
+        }
+    }
+}
+
+
+dependencies {
+    kapt project(":coldstorageannotation")
+    compileOnly project(':coldstorageannotation')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // configuration generator for service providers
+    implementation "com.google.auto.service:auto-service:1.0-rc4"
+    kapt "com.google.auto.service:auto-service:1.0-rc4"
+
+    // https://mvnrepository.com/artifact/com.squareup/kotlinpoet
+    implementation 'com.squareup:kotlinpoet:1.5.0'
+
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.3.61'
+
+
+
+}

@@ -43,6 +43,11 @@ abstract class Cache {
             ConcurrentHashMap()
 
         /**
+         * The generated map by the annotation processor.
+         */
+        private var generatedReferenceMap: Map<String, String> = hashMapOf()
+
+        /**
          * The max amount of data that can be stored in app memory.
          * The default value is 20 Mb
          */
@@ -94,7 +99,11 @@ abstract class Cache {
                         sharedPreferences.getString(key, ""),
                         CachedDataModel::class.java
                     )
-                    if (!isDataStale(cachedDataModel)) {
+                    if (!isDataStale(
+                            cachedDataModel.timeToLive,
+                            cachedDataModel.timestamp
+                        )
+                    ) {
                         cache[key] = cachedDataModel
                     }
                 }
@@ -125,8 +134,6 @@ abstract class Cache {
                     break
                 }
             }
-
-
         }
 
         /**
@@ -134,17 +141,17 @@ abstract class Cache {
          *
          * @param cachedDataModel the cached data.
          */
-        private fun isDataStale(cachedDataModel: CachedDataModel): Boolean {
+        fun isDataStale(timeToLive: Long?, timestamp: Long): Boolean {
             val current = System.currentTimeMillis()
-            if (cachedDataModel.timeToLive != null) {
-                val difference = current - cachedDataModel.timestamp
-                if (difference > cachedDataModel.timeToLive) {
+            if (timeToLive != null) {
+                val difference = current - timestamp
+                if (difference > timeToLive) {
                     Log.i("COLD_STORAGE", "Cache miss due to stale data")
                     return true
                 }
                 return false
             } else if (maxTimeToLive != null) {
-                val differenceGlobal = current - cachedDataModel.timestamp
+                val differenceGlobal = current - timestamp
                 if (differenceGlobal > maxTimeToLive!!) {
                     Log.i("COLD_STORAGE", "Cache miss due to stale data")
                     return true
@@ -155,6 +162,52 @@ abstract class Cache {
             Log.i("COLD_STORAGE", "Cache hit")
             return false
 
+        }
+
+        /**
+         * Method to clear the cache.
+         */
+        fun clearCache() {
+            cache.clear()
+        }
+
+        /**
+         * Method that can be used to cache an object if the get method is not used
+         * directly.This can be used when the data fetching logic cannot be implemented
+         * inside the update method or the cache needs to be updated
+         * from a different async process.
+         *
+         * @param key the key for which the object needs to be cached
+         *
+         * @param objectToCache the object that needs to be cached.This object
+         * should be serializable so that it can be converted to a string.
+         *
+         * @param timeToLive the time after which the object will be considered stale.
+         */
+        fun <Value> addToCache(key: String, objectToCache: Value, timeToLive: Long? = null) {
+            val objectAsString = objectMapper.writeValueAsString(objectToCache)
+            cache[key] = CachedDataModel(
+                objectAsString,
+                System.currentTimeMillis(), timeToLive
+            )
+        }
+
+        /**
+         * Method to get a value from the cache.
+         *
+         * @param key The key for which the value is fetched.
+         * If the key is not present in the cache null is returned.
+         */
+        fun get(key: String): CachedDataModel? {
+            return if (cache.containsKey(key)) {
+                if (isDataStale(cache[key]!!.timeToLive, cache[key]!!.timestamp)) {
+                    null
+                } else {
+                    cache[key]
+                }
+            } else {
+                null
+            }
         }
 
     }
@@ -273,33 +326,13 @@ abstract class Cache {
             .getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
         trimData()
         cache.forEach { entry ->
-            if (!isDataStale(entry.value)) {
+            if (!isDataStale(entry.value.timeToLive, entry.value.timestamp)) {
                 val stringValue = objectMapper.writeValueAsString(entry.value)
                 sharedPreferences.edit().putString(entry.key, stringValue).apply()
             }
         }
     }
 
-    /**
-     * Method that can be used to cache an object if the get method is not used
-     * directly.This can be used when the data fetching logic cannot be implemented
-     * inside the update method or the cache needs to be updated
-     * from a different async process.
-     *
-     * @param key the key for which the object needs to be cached
-     *
-     * @param objectToCache the object that needs to be cached.This object
-     * should be serializable so that it can be converted to a string.
-     *
-     * @param timeToLive the time after which the object will be considered stale.
-     */
-    fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
-        val objectAsString = objectMapper.writeValueAsString(objectToCache)
-        cache[key] = CachedDataModel(
-            objectAsString,
-            System.currentTimeMillis(), timeToLive
-        )
-    }
 
     /**
      * Method that will return the value from cache if present but it will
@@ -317,7 +350,7 @@ abstract class Cache {
     fun getWithoutUpdate(key: String, converter: IConverter<Any?>? = null): Any? {
         if (cache.containsKey(key)) {
             //if data is stale null is returned.
-            if (isDataStale(cache[key]!!)) {
+            if (isDataStale(cache[key]!!.timeToLive, cache[key]!!.timestamp)) {
                 return null
             }
             val cachedString = cache[key]!!.objectToCache
@@ -338,7 +371,7 @@ abstract class Cache {
     private fun fetchFromCache(key: String): CachedDataModel? {
         return if (cache.containsKey(key)) {
             val cachedDataModel = cache[key]!!
-            if (isDataStale(cachedDataModel)) {
+            if (isDataStale(cachedDataModel.timeToLive, cachedDataModel.timestamp)) {
                 return null
             }
             return cachedDataModel
@@ -348,10 +381,25 @@ abstract class Cache {
     }
 
     /**
-     * Method to clear the cache.
+     * Method that can be used to cache an object if the get method is not used
+     * directly.This can be used when the data fetching logic cannot be implemented
+     * inside the update method or the cache needs to be updated
+     * from a different async process.
+     *
+     * @param key the key for which the object needs to be cached
+     *
+     * @param objectToCache the object that needs to be cached.This object
+     * should be serializable so that it can be converted to a string.
+     *
+     * @param timeToLive the time after which the object will be considered stale.
      */
-    fun clearCache() {
-        cache.clear()
+    @Deprecated("Use the static method in place of this.")
+    fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
+        val objectAsString = objectMapper.writeValueAsString(objectToCache)
+        cache[key] = CachedDataModel(
+            objectAsString,
+            System.currentTimeMillis(), timeToLive
+        )
     }
 
     /**

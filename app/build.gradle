@@ -1,13 +1,18 @@
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'kotlin-kapt'
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
     defaultConfig {
+        applicationId "com.arcane.coldstorage"
         minSdkVersion 15
         targetSdkVersion 29
         versionCode 1
@@ -34,4 +39,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     androidTestImplementation 'org.mockito:mockito-core:2.19.0'
     implementation project(path: ':coldstoragecache')
+    implementation project(path : ':coldstorageannotation')
+    kapt project(path : ':coldstoragecompiler')
+
 }
