@@ -18,7 +18,7 @@ https://github.com/crypticminds/coldstorageexamples
 Add the library to your build.gradle file
 
 ``` 
-implementation 'com.github.crypticminds:ColdStorage:2.0.0'
+ implementation "com.github.crypticminds.ColdStorage:coldstoragecache:2.0.1"
  ```
  ***Check the latest release to get the newest features.***
  
