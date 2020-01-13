@@ -4,7 +4,6 @@ import com.arcane.coldstorageannotation.Refrigerate
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-
 import java.io.File
 import java.util.stream.Collectors
 import javax.annotation.processing.*
@@ -23,6 +22,15 @@ import kotlin.reflect.jvm.internal.impl.name.FqName
 @SupportedSourceVersion(SourceVersion.RELEASE_8) // to support Java 8
 @SupportedOptions(FileGenerator.KAPT_KOTLIN_GENERATED_OPTION_NAME)
 class FileGenerator : AbstractProcessor() {
+
+    private lateinit var processingEnvironment: ProcessingEnvironment
+
+    private val methods: MutableList<FunSpec> = arrayListOf()
+
+    override fun init(pe: ProcessingEnvironment?) {
+        super.init(pe)
+        processingEnvironment = pe!!
+    }
 
     /**
      * Set the supported annotation types.
@@ -56,7 +64,6 @@ class FileGenerator : AbstractProcessor() {
             Refrigerate::class.java
         )
 
-        val methods: MutableList<FunSpec> = arrayListOf()
         annotatedElements?.forEach { element ->
             methods.add(
                 generateWrapperMethod(
