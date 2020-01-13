@@ -3,12 +3,22 @@
 
 **A lightweight caching library for android written in Kotlin.**
 
+## Usage with annotation
+
+Check the post to see how you can use @Refrigerate annotation to cache data :-
+https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4
+
+## Example 
+
+https://github.com/crypticminds/coldstorageexamples
+
+
 ## Basic Usage
 
 Add the library to your build.gradle file
 
 ``` 
-implementation 'com.github.crypticminds:ColdStorage:1.0.1'
+implementation 'com.github.crypticminds:ColdStorage:2.0.0'
  ```
  ***Check the latest release to get the newest features.***
  
