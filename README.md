@@ -4,6 +4,8 @@
 
 **A lightweight caching library for android written in Kotlin.**
 
+![Logo](https://i.imgur.com/rEE8hUO.jpg)
+
 ## Usage with annotation
 
 > Check the post for an indepth tutorial on how to  use @Refrigerate
