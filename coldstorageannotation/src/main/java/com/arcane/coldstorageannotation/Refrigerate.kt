@@ -11,7 +11,7 @@ package com.arcane.coldstorageannotation
  * for the operation . For example for an image download the key will be
  * the url from which the image needs to be downloaded from.
  * If no key is present in the array , all the parameters for the function
- * will be considered as keys
+ * will be considered as keys.
  *
  * @param operation the unique name for the operation.This name will be
  * returned using the callback along with the result.

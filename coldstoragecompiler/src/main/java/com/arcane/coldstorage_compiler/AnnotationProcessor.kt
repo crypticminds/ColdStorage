@@ -1,17 +1,19 @@
 package com.arcane.coldstorage_compiler
 
+import com.arcane.coldstorage_compiler.helper.CodeGenerationHelper
 import com.arcane.coldstorageannotation.Refrigerate
 import com.google.auto.service.AutoService
-import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.TypeSpec
 import java.io.File
-import java.util.stream.Collectors
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
-import javax.lang.model.element.*
-import javax.lang.model.type.ExecutableType
-import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
-import kotlin.reflect.jvm.internal.impl.name.FqName
+import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.Modifier
+import javax.lang.model.element.TypeElement
+import javax.lang.model.type.TypeKind
+import javax.tools.Diagnostic
 
 /**
  * The annotation processor that generates the cache layer.
@@ -20,16 +22,19 @@ import kotlin.reflect.jvm.internal.impl.name.FqName
  */
 @AutoService(Processor::class) // For registering the service
 @SupportedSourceVersion(SourceVersion.RELEASE_8) // to support Java 8
-@SupportedOptions(FileGenerator.KAPT_KOTLIN_GENERATED_OPTION_NAME)
-class FileGenerator : AbstractProcessor() {
+@SupportedOptions(AnnotationProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)
+class AnnotationProcessor : AbstractProcessor() {
 
     private lateinit var processingEnvironment: ProcessingEnvironment
+
+    private lateinit var codeGenerationHelper: CodeGenerationHelper
 
     private val methods: MutableList<FunSpec> = arrayListOf()
 
     override fun init(pe: ProcessingEnvironment?) {
         super.init(pe)
         processingEnvironment = pe!!
+        codeGenerationHelper = CodeGenerationHelper()
     }
 
     /**
@@ -64,93 +69,46 @@ class FileGenerator : AbstractProcessor() {
             Refrigerate::class.java
         )
 
+        //TODO check if all the annotated elements are methods and each have a return type
         annotatedElements?.forEach { element ->
-            methods.add(
-                generateWrapperMethod(
-                    element
+            if (element is ExecutableElement) {
+                when {
+                    element.modifiers.contains(Modifier.PRIVATE) -> {
+                        processingEnvironment.messager.printMessage(
+                            Diagnostic.Kind.ERROR,
+                            "Refrigerate can not be used on private method : ${element.simpleName}"
+                        )
+
+                    }
+                    element.returnType.kind == TypeKind.VOID -> {
+                        processingEnvironment.messager.printMessage(
+                            Diagnostic.Kind.ERROR,
+                            "Refrigerate can not be used on methods that does not return anything. " +
+                                    "There is nothing to put in cache : ${element.simpleName}"
+                        )
+                    }
+                    else -> {
+                        methods.add(
+                            codeGenerationHelper.generateWrapperMethod(
+                                element, element.getAnnotation(Refrigerate::class.java)
+                            )
+                        )
+                    }
+                }
+            } else {
+                processingEnvironment.messager.printMessage(
+                    Diagnostic.Kind.ERROR,
+                    "Refrigerate can only be used on functions"
                 )
-            )
+
+            }
+
+
         }
         generateClass(methods)
         return true
     }
 
-    /**
-     * Method that generated the wrapper method.
-     */
-    private fun generateWrapperMethod(element: Element): FunSpec {
-        val executableType = element.asType() as ExecutableType
-        val name = element.simpleName.toString()
-        val parameterTypes = executableType.parameterTypes
-        val executableElement = element as ExecutableElement
-        val enclosingElement = executableElement.enclosingElement
-
-        val refrigerate = element.getAnnotation(Refrigerate::class.java)
-
-
-        var counter = 0
-        val parameterList = arrayListOf<ParameterSpec>()
-        val declaringClass = (enclosingElement as TypeElement).qualifiedName.toString()
-        val variables = arrayListOf<String>()
-
-        parameterTypes.forEach { parameter ->
-            val variableName = executableElement.parameters[counter]
-                .simpleName.toString()
-
-            val parameterSpec = ParameterSpec
-                .builder(
-                    variableName,
-                    parameter.asTypeName().javaToKotlinType()
-                )
-                .build()
-            parameterList.add(parameterSpec)
-            variables.add(variableName)
-            counter += 1
-        }
-
-        //adding the class to the parameter.
-        if (!element.modifiers.contains(Modifier.STATIC)) {
-            val variableType = ClassName(
-                getPackageName(declaringClass),
-                getClassName(declaringClass)
-            )
-            val parameterSpec = ParameterSpec.builder(
-                GENERATED_OBJECT_PARAMETER_NAME, variableType
-            )
-                .build()
-            parameterList.add(parameterSpec)
-        }
-
-        //adding the callback variable
-        val callBack = ClassName(
-            CALL_BACK_PACKAGE_NAME,
-            CALL_BACK_INTERFACE_NAME
-        )
-        val parametrizedCallback = callBack.parameterizedBy(
-            executableElement
-                .returnType.asTypeName().javaToKotlinType().copy(nullable = true)
-        )
-        val callbackSpec = ParameterSpec.builder(
-            CALL_BACK_PARAMETER_NAME, parametrizedCallback
-        )
-            .build()
-        parameterList.add(callbackSpec)
-
-
-        return FunSpec.builder(name)
-            .addParameters(parameterList)
-            .addCode(
-                generateCodeBlock(
-                    name,
-                    variables,
-                    executableElement
-                        .returnType.asTypeName().javaToKotlinType(),
-                    refrigerate
-                    , executableElement.parameters
-                )
-            )
-            .build()
-    }
 
     /**
      * Method that generates the class.
@@ -179,134 +137,6 @@ class FileGenerator : AbstractProcessor() {
         kotlinFile.writeTo(file)
     }
 
-    /**
-     * Method to get the class name from FQFN.
-     */
-    private fun getClassName(fullyQualifiedName: String): String {
-        return fullyQualifiedName.substring(
-            fullyQualifiedName.lastIndexOf('.') + 1, fullyQualifiedName.length
-        )
-
-    }
-
-    /**
-     * Method to get the package name from FQFN.
-     */
-    private fun getPackageName(fullyQualifiedName: String): String {
-        return fullyQualifiedName.substring(
-            0,
-            fullyQualifiedName.lastIndexOf('.')
-        )
-
-    }
-
-    /**
-     * Method that generates the code block inside each method.
-     * The logic here is that the actual method will be called
-     * if the value against the key is not available inside the
-     * cache.
-     */
-    private fun generateCodeBlock(
-        name: String,
-        variables: ArrayList<String>,
-        returnType: Any,
-        refrigerate: Refrigerate,
-        parameters: MutableList<out VariableElement>
-    ): CodeBlock {
-
-
-        val timeToLive: Long? =
-            if (refrigerate.timeToLive < 0) {
-                null
-            } else {
-                refrigerate.timeToLive
-            }
-
-        //TODO check if variable name is incorrect
-        val keys: MutableList<String> =
-            if (refrigerate.keys.isEmpty()) {
-                parameters.stream().map { parameter ->
-                    parameter.simpleName.toString()
-                }.collect(Collectors.toList())
-            } else {
-                refrigerate.keys.toMutableList()
-            }
-
-        var calculateKeyCodeBlock = "val $KEY_VARIABLE = "
-
-        if (keys.isNullOrEmpty()) {
-            calculateKeyCodeBlock += " \"${refrigerate.operation}\""
-        } else {
-            keys.forEach { key ->
-                calculateKeyCodeBlock += "Integer.toString($key.hashCode())"
-                if (keys.indexOf(key) != keys.size - 1) {
-                    calculateKeyCodeBlock += " + "
-                }
-            }
-        }
-
-        val coldStorageCache = ClassName(
-            "com.arcane.coldstoragecache.cache",
-            "ColdStorage"
-        )
-
-
-        val run = FunSpec.builder("run")
-            .addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
-            .returns(Void.TYPE)
-            .addStatement(calculateKeyCodeBlock)
-            .beginControlFlow("if (%T.get($KEY_VARIABLE) == null)", coldStorageCache)
-            .addStatement(
-                "val generatedVariable = $GENERATED_OBJECT_PARAMETER_NAME" +
-                        ".$name(${variables.joinToString(separator = ", ")})", returnType
-            )
-            .addStatement("%T.put($KEY_VARIABLE,generatedVariable,$timeToLive)", coldStorageCache)
-            .addStatement(
-                "$CALL_BACK_PARAMETER_NAME.onSuccess(generatedVariable," +
-                        "\"${refrigerate.operation}\")"
-            )
-            .nextControlFlow("else")
-            .addStatement(
-                "$CALL_BACK_PARAMETER_NAME.onSuccess(" +
-                        "%T.get($KEY_VARIABLE) as (%T),\"${refrigerate.operation}\")",
-                coldStorageCache,
-                returnType
-            )
-            .endControlFlow()
-            .addAnnotation(Override::class.java).build()
-
-        val runnable = TypeSpec.anonymousClassBuilder()
-            .addSuperinterface(Runnable::class.java)
-            .addFunction(run).build()
-
-
-        return CodeBlock.builder()
-            .addStatement(
-                "%T( %L )", ClassName(
-                    "android.os.AsyncTask",
-                    "execute"
-                ), runnable
-            )
-            .build()
-
-
-    }
-
-
-    /**
-     * Converting java types to kotlin types.
-     */
-    private fun TypeName.javaToKotlinType(): TypeName = if (this is ParameterizedTypeName) {
-        (rawType.javaToKotlinType() as ClassName).parameterizedBy(
-            *typeArguments.map { it.javaToKotlinType() }.toTypedArray()
-        )
-    } else {
-        val className = JavaToKotlinClassMap.INSTANCE
-            .mapJavaToKotlin(FqName(toString()))?.asSingleFqName()?.asString()
-        if (className == null) this
-        else ClassName.bestGuess(className)
-    }
-
 
     /**
      * The static members of this class.
@@ -317,17 +147,8 @@ class FileGenerator : AbstractProcessor() {
 
         const val GENERATED_PACKAGE_NAME = "com.arcane.generated"
 
-        const val GENERATED_OBJECT_PARAMETER_NAME = "obj"
-
-        const val CALL_BACK_PARAMETER_NAME = "callback"
-
-        const val CALL_BACK_PACKAGE_NAME = "com.arcane.coldstoragecache.callback"
-
-        const val CALL_BACK_INTERFACE_NAME = "OnOperationSuccessfulCallback"
-
         const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
 
-        const val KEY_VARIABLE = "thisvariablenameisspecial"
     }
 
 }
