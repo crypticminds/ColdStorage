@@ -25,58 +25,7 @@
     	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:2.0.1"
     
      ***Check the latest release to get the newest features.***
-
-## @Refrigerate Annotation
-Annotate your functions using this to keep the output of the function in the cache for a given set of inputs .
-
-Usage:-
-
-    @Refrigerate(timeToLive : 2000, operation = "cacheImage" , keys=["url"])
-    fun downloadImage(url : String) : Bitmap {
-    .....
-    }
-This will keep the bitmap in the cache for a unique URL for 2 seconds.
-The **keys** parameter will decide which parameters of the function will be the key of the cache.
-
-    @Refrigerate(timeToLive : 20000, operation = "remoteServiceCall" , keys=["url","data"])
-        fun callRemoteService(url : String, data : String , someRandomVariable : String) : String {
-        .....
-        }
- In the above example **url** and **data** will together form the key of the cache , such that if it determines that the same url and data is passed to the function (until the value expires in the cache) irrespective of the value of "**someRandomVariable**" it will 
- return the data from the cache. Using the **keys** parameter you can decide which variables should form the key of the cache for the annotated function.
-
-During compilation the annotations will generate a class "**GeneratedCacheLayer**
-and instead of using your annotated functions directly you will use them via this class.
-
-To invoke the above functions you will call :-
-
-    GeneratedCacheLayer.downloadImage("myurl", objectOfTheClassWhereTheMethodBelongs , callback)
-
-    GeneratedCacheLayer.callRemoteService("myurl", "mydata" , "myrandomVariable" , objectOfTheClassWhereTheMethodBelongs , callback)
-
-
-The generated method will have the same name and accept the same variables as the original method but with two extra parameters , one is the object of the class where the original annotated method is present in and the second is the callback (**OnOperationsuccessfulCallback**) which will be used to pass the cached data to the main thread from the background thread. (All cache operations take place on a separate thread). For more information about the usage check the example below or the [article](https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4) 
-
-> After applying the annotation you can try running your application on AVD so that the GeneratedCacheLayer file is created. Then use it just like
-> a regular class in your project. Your IDE will be able to index it
-> after it is generated and you will be able see the parameters the generated functions will accept. The generated file will change when you change your annotated functions.
-
- 
-
-## Example 
-
-https://github.com/crypticminds/coldstorageexamples
-
-
-## Basic Usage (Without annotations)
-
-Add the library to your build.gradle file
-
-``` 
- implementation "com.github.crypticminds.ColdStorage:coldstoragecache:2.0.1"
- ```
- ***Check the latest release to get the newest features.***
- 
+     
  You need to initialize the cache when the application starts. The initialization takes care of pulling previously cached data and loading them into the memory . 
  
  -  Create an application class and initialize the cache in the onCreate() method.
@@ -106,13 +55,72 @@ Add the library to your build.gradle file
             android:name=".application.Application">
     </application>
 ```
+
+## @Refrigerate Annotation
+Annotate your functions using this to keep the output of the function in the cache for a given set of inputs .
+
+Usage:-
+
+```kotlin
+    @Refrigerate(timeToLive : 2000, operation = "cacheImage" , keys=["url"])
+    fun downloadImage(url : String) : Bitmap {
+    .....
+    }
+```
+This will keep the bitmap in the cache for a unique URL for 2 seconds.
+The **keys** parameter will decide which parameters of the function will be the key of the cache.
+
+```kotlin
+    @Refrigerate(timeToLive : 20000, operation = "remoteServiceCall" , keys=["url","data"])
+        fun callRemoteService(url : String, data : String , someRandomVariable : String) : String {
+        .....
+        }
+```
+ In the above example **url** and **data** will together form the key of the cache , such that if it determines that the same url and data is passed to the function (until the value expires in the cache) irrespective of the value of "**someRandomVariable**" it will 
+ return the data from the cache. Using the **keys** parameter you can decide which variables should form the key of the cache for the annotated function.
+
+During compilation the annotations will generate a class "**GeneratedCacheLayer**
+and instead of using your annotated functions directly you will use them via this class.
+
+To invoke the above functions you will call :-
+
+```kotlin
+    GeneratedCacheLayer.downloadImage("myurl", objectOfTheClassWhereTheMethodBelongs , callback)
+
+    GeneratedCacheLayer.callRemoteService("myurl", "mydata" , "myrandomVariable" , objectOfTheClassWhereTheMethodBelongs , callback)
+```
+
+
+The generated method will have the same name and accept the same variables as the original method but with two extra parameters , one is the object of the class where the original annotated method is present in and the second is the callback (**OnOperationsuccessfulCallback**) which will be used to pass the cached data to the main thread from the background thread. (All cache operations take place on a separate thread). For more information about the usage check the example below or the [article](https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4) 
+
+> After applying the annotation you can try running your application on AVD so that the GeneratedCacheLayer file is created. Then use it just like
+> a regular class in your project. Your IDE will be able to index it
+> after it is generated and you will be able see the parameters the generated functions will accept. The generated file will change when you change your annotated functions.
+
+ 
+
+## Example 
+
+https://github.com/crypticminds/coldstorageexamples
+
+
+## Basic Usage (Without annotations)
+
+Add the library to your build.gradle file
+
+``` 
+ implementation "com.github.crypticminds.ColdStorage:coldstoragecache:2.0.1"
+ ```
+ ***Check the latest release to get the newest features.***
+ 
+
     
 
    
  Create your cache layer by extending the **Cache class**. You will have to implement the update method.
  The update method should take care of fetching the data when the data is stale or is not present in the cache.
  
-
+```kotlin
     import android.graphics.Bitmap
     import android.graphics.BitmapFactory
     import android.util.Base64
@@ -162,6 +170,7 @@ Add the library to your build.gradle file
             return Base64.encodeToString(b, Base64.DEFAULT)
         }
     }
+```
 	
 	
 **The update method should return the value to be cahced in form of a string. If you are planning to store complex objects , serialize them into a string and return them from the method.**
@@ -174,6 +183,7 @@ You will need to implement the **OnValueFetchedCallback** interface and pass it 
 Optionally you can also pass a time to live value and a converter. They are explained in detail below.
 
 
+```kotlin
 
     import android.graphics.Bitmap
     import android.os.Bundle
@@ -247,6 +257,8 @@ Optionally you can also pass a time to live value and a converter. They are expl
             }
         }
     }
+    
+```
     
 
 **The time to  live value in the get method to specify how long a data needs to be stored in the cache.**
