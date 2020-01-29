@@ -30,6 +30,7 @@
  
  -  Create an application class and initialize the cache in the onCreate() method.
  
+ ```kotlin
 	    import android.app.Application
 	    import com.arcane.coldstoragecache.cache.Cache
     
@@ -41,10 +42,11 @@
 	        }
     
 	    }
+```
 
 -  Register your application in the android manifest file by providing the **android:name** attribute
 
-```
+```xml
 <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -58,6 +60,17 @@
 
 ## @Refrigerate Annotation
 Annotate your functions using this to keep the output of the function in the cache for a given set of inputs .
+
+### For releases > 2.1.0 
+
+Now you can use @CacheKey annotation to declare parameters as the keys of the cache
+
+```kotlin
+    @Refrigerate(timeToLive : 2000, operation = "cacheImage")
+    fun downloadImage(@CacheKey url : String , @CacheKey someOtherVariable : String , variableThatIsNotAKey : String) : Bitmap {
+    .....
+    }
+```
 
 Usage:-
 
