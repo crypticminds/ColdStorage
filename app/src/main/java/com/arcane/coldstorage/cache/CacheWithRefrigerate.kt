@@ -1,5 +1,6 @@
 package com.arcane.coldstorage.cache
 
+import com.arcane.coldstorageannotation.CacheKey
 import com.arcane.coldstorageannotation.Refrigerate
 
 class CacheWithRefrigerate {
@@ -10,11 +11,20 @@ class CacheWithRefrigerate {
         return "B"
     }
 
+    @Refrigerate(operation = "serviceB")
+    fun makeCallToSomeService(@CacheKey key: String,
+                              @CacheKey abcd: String,
+                              efgh : String,
+                              ignorethis : String): String {
+        return "C"
+
+    }
+
     /**
      * This will throw an error since the function is private
     @Refrigerate(operation = "failure")
     private fun failureFunction(): String {
-        return "C"
+    return "C"
     }
 
 
@@ -23,5 +33,5 @@ class CacheWithRefrigerate {
     fun failureFunction2() {
 
     }
-    **/
+     **/
 }

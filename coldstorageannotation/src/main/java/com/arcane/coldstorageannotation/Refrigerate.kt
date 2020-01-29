@@ -22,6 +22,7 @@ package com.arcane.coldstorageannotation
 @Target(AnnotationTarget.FUNCTION)
 annotation class Refrigerate(
     val timeToLive: Long = -1,
+    @Deprecated("Use the annotation @CacheKey")
     val keys: Array<String> = [],
     val operation: String
 )

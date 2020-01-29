@@ -1,9 +1,11 @@
 package com.arcane.coldstorage_compiler.helper
 
+import com.arcane.coldstorageannotation.CacheKey
 import com.arcane.coldstorageannotation.Freeze
 import com.arcane.coldstorageannotation.Refrigerate
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import java.util.*
 import java.util.stream.Collectors
 import javax.lang.model.element.*
 import javax.lang.model.type.ExecutableType
@@ -256,23 +258,42 @@ class CodeGenerationHelper {
             }
 
         //TODO check if variable name is incorrect
-        val keys: MutableList<String> =
-            if (refrigerate.keys.isEmpty()) {
-                parameters.stream().map { parameter ->
+        val keys: MutableList<String> = refrigerate.keys.toMutableList()
+
+
+
+        var annotatedKeys = parameters
+            .stream()
+            .map { parameter ->
+                if (parameter.getAnnotation(CacheKey::class.java) == null) {
+                    null
+                } else {
                     parameter.simpleName.toString()
-                }.collect(Collectors.toList())
-            } else {
-                refrigerate.keys.toMutableList()
+                }
             }
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList())
+
+
+        annotatedKeys.addAll(keys)
+
+        if(annotatedKeys.isEmpty()) {
+            annotatedKeys = parameters.stream().map { parameter ->
+                parameter.simpleName.toString()
+            }.collect(Collectors.toList())
+        }
+
+        val allKeys = annotatedKeys.stream().distinct().collect(Collectors.toList())
+
 
         var calculateKeyCodeBlock = "val $KEY_VARIABLE = "
 
-        if (keys.isNullOrEmpty()) {
+        if (allKeys.isNullOrEmpty()) {
             calculateKeyCodeBlock += " \"${refrigerate.operation}\""
         } else {
-            keys.forEach { key ->
+            allKeys.forEach { key ->
                 calculateKeyCodeBlock += "Integer.toString($key.hashCode())"
-                if (keys.indexOf(key) != keys.size - 1) {
+                if (allKeys.indexOf(key) != allKeys.size - 1) {
                     calculateKeyCodeBlock += " + "
                 }
             }
