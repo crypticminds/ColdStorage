@@ -72,7 +72,9 @@ Now you can use @CacheKey annotation to declare parameters as the keys of the ca
     }
 ```
 
-Usage:-
+### For releases < 2.1.0 
+
+If you are using the old version , you will need to use the keys parameter to define your cache keys.
 
 ```kotlin
     @Refrigerate(timeToLive : 2000, operation = "cacheImage" , keys=["url"])
