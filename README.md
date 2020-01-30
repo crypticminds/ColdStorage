@@ -11,6 +11,10 @@
 > Check the post for an indepth tutorial on how to  use @Refrigerate
 > annotation to cache data :-
 > https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4
+> Check out the post for usage of @Freeze annotation
+> https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-3-3d4cfcb57df0
+> Examples can be found here :-
+> https://github.com/crypticminds/coldstorageexamples
 
 ## Setup
 
@@ -20,9 +24,9 @@
 
 * Add the dependencies
 
-        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:2.0.1"  
-	    kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:2.0.1"  
-    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:2.0.1"
+        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:3.0.1"  
+	    kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:3.0.1"  
+    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:3.0.1"
     
      ***Check the latest release to get the newest features.***
      
@@ -57,6 +61,62 @@
             android:name=".application.Application">
     </application>
 ```
+
+## @Freeze Annotation
+
+Annotate your class using the freeze annotation to apply caching logic on top of all the methods present in the class.
+
+```kotlin
+@Freeze(generatedClassName = "MyBeautifulCacheLayer")
+class MakeRemoteCallWithFreeze {
+
+    
+    fun makeRemoteCallToServiceA(value: String): String {
+        val url = "https://httpbin.org/get?param1=$value"
+        val textResponse = URL(url).readText()
+        return textResponse
+    }
+
+
+    /**
+     * Here I am marking the parameters that will together form the cache key
+     * with @CacheKey
+     */
+    fun makeRemoteCallToServiceB(
+        @CacheKey parameter1: String,
+        @CacheKey parameter2: String,
+        parameter3: String
+    ): String {
+        val url = "https://httpbin.org/get?param1=$parameter1&param2=$parameter2&param3=$parameter3"
+        val textResponse = URL(url).readText()
+        return textResponse
+    }
+}
+```
+
+This will generate a class called "MyBeautifulCacheLayer" . You can use this class to call the methods.
+
+```kotlin 
+
+//you need to implement the OnOperationSuccessfulCallback interface.
+val callback = object : OnOperationSuccessfulCallback<String>{
+        override fun onSuccess(output: String?, operation: String) {
+            //handle the output here.
+	    //operation is the name of the method that returns the output. In this case the output
+	    //can be "makeRemoteCallToServiceB" or "makeRemoteCallToServiceA" . You can handle the output
+	    //based on which method is returning it.
+        }
+    }
+
+val cacheLayer = MyBeautifulCacheLayer()
+
+cacheLayer.makeRemoteCallToServiceA("someString" , callback)
+
+cacheLayer.makeRemoteCallToServiceB(.... )
+
+```
+
+
 
 ## @Refrigerate Annotation
 Annotate your functions using this to keep the output of the function in the cache for a given set of inputs .
