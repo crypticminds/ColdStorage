@@ -115,9 +115,14 @@ class FreezeAnnotationProcessor : AbstractProcessor() {
             .addFunctions(methods)
             .build()
 
+        val fileName =
+            if (element.getAnnotation(Freeze::class.java).generatedClassName.isBlank())
+                "Generated${element.simpleName} " else
+                element.getAnnotation(Freeze::class.java).generatedClassName
+
         val kotlinFile = FileSpec.builder(
             GENERATED_PACKAGE_NAME,
-            "Cache${element.simpleName}"
+            fileName
         )
             .addType(kotlinClass)
             .build()

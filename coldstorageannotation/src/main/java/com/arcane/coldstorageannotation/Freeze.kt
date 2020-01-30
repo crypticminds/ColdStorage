@@ -10,9 +10,15 @@ package com.arcane.coldstorageannotation
  * @param maxSize the maximum size allocated for the class to store data in
  * the cache.
  *
+ * @param generatedClassName the name of the cache class that will be generated.
+ * If a value is not provided here a prefix "Generated" will be added to the original
+ * class.
+ *
  * This cache will generate a class with the original class name prefixed with
  * "cacheLayer" with all the methods wrapped with the caching logic.
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-annotation class Freeze(val timeToLive: Long = -1, val maxSize: Long = -1)
+annotation class Freeze(val timeToLive: Long = -1,
+                        val maxSize: Long = -1,
+                        val generatedClassName : String = "")

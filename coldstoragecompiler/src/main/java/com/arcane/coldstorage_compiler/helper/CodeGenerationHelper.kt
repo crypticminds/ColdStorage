@@ -179,9 +179,31 @@ class CodeGenerationHelper {
         if (parameters.isNullOrEmpty()) {
             calculateKeyCodeBlock += " \"$name\""
         } else {
-            parameters.forEach { key ->
+
+            var keys = mutableListOf<String>()
+
+            val annotatedKeys = parameters.stream().map { parameter ->
+                if (parameter.getAnnotation(CacheKey::class.java) != null) {
+                    parameter.simpleName.toString()
+                } else {
+                    null
+                }
+            }.filter(Objects::nonNull)
+                .collect(Collectors.toList())
+
+            if (annotatedKeys.isEmpty()) {
+                keys = parameters.stream().map { parameter -> parameter.simpleName.toString() }
+                    .collect(Collectors.toList())
+            } else {
+                annotatedKeys.forEach { key -> keys.add(key!!) }
+            }
+
+
+
+
+            keys.forEach { key ->
                 calculateKeyCodeBlock += "Integer.toString($key.hashCode())"
-                if (parameters.indexOf(key) != parameters.size - 1) {
+                if (keys.indexOf(key) != keys.size - 1) {
                     calculateKeyCodeBlock += " + "
                 }
             }
@@ -261,7 +283,6 @@ class CodeGenerationHelper {
         val keys: MutableList<String> = refrigerate.keys.toMutableList()
 
 
-
         var annotatedKeys = parameters
             .stream()
             .map { parameter ->
@@ -277,7 +298,7 @@ class CodeGenerationHelper {
 
         annotatedKeys.addAll(keys)
 
-        if(annotatedKeys.isEmpty()) {
+        if (annotatedKeys.isEmpty()) {
             annotatedKeys = parameters.stream().map { parameter ->
                 parameter.simpleName.toString()
             }.collect(Collectors.toList())
