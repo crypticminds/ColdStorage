@@ -11,8 +11,10 @@
 > Check the post for an indepth tutorial on how to  use @Refrigerate
 > annotation to cache data :-
 > https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4
+>
 > Check out the post for usage of @Freeze annotation
 > https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-3-3d4cfcb57df0
+>
 > Examples can be found here :-
 > https://github.com/crypticminds/coldstorageexamples
 
