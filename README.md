@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/70a11286c03741ae9be36ad2416d7946)](https://app.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&utm_medium=referral&utm_content=crypticminds/ColdStorage&utm_campaign=Badge_Grade_Dashboard)
 # ColdStorage [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg)
 
 **A lightweight caching library for android written in Kotlin.**
