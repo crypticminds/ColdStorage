@@ -18,11 +18,11 @@
 
 ## Setup
 
-  *  Add kotlin-kapt gradle plugin to **app build.gradle** file
+*  Add kotlin-kapt gradle plugin to **app build.gradle** file
 
-	    apply plugin: "kotlin-kapt"
+        apply plugin: "kotlin-kapt"
 
-  *  Add the dependencies
+*  Add the dependencies
 
         implementation "com.github.crypticminds.ColdStorage:coldstoragecache:3.0.1"  
         kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:3.0.1"
@@ -32,7 +32,7 @@
      
  You need to initialize the cache when the application starts. The initialization takes care of pulling previously cached data and loading them into the memory . 
  
- * Create an application class and initialize the cache in the onCreate() method.
+*  Create an application class and initialize the cache in the onCreate() method.
  
     ```kotlin
 	    import android.app.Application
@@ -48,7 +48,7 @@
 	    }
     ```
 
- * Register your application in the android manifest file by providing the **android:name** attribute
+*  Register your application in the android manifest file by providing the **android:name** attribute
 
 ```xml
 <application
@@ -169,8 +169,6 @@ The generated method will have the same name and accept the same variables as th
 > a regular class in your project. Your IDE will be able to index it
 > after it is generated and you will be able see the parameters the generated functions will accept. The generated file will change when you change your annotated functions.
 
- 
-
 ## Example 
 
 <https://github.com/crypticminds/coldstorageexamples>
@@ -238,8 +236,7 @@ Add the library to your build.gradle file
         }
     }
 ```
-	
-	
+
 **The update method should return the value to be cahced in form of a string. If you are planning to store complex objects , serialize them into a string and return them from the method.**
 
 Your cache is now ready. To use the cache create an instance of it and call the **get** method of the cache.
@@ -331,6 +328,6 @@ Optionally you can also pass a time to live value and a converter. They are expl
 
 ## Other usage
 
-* You can update the cache manually using the **addToCache** method. Use this method if you need to update the cache from a sperate async task . You will need to pass the key , and the value (the value needs to be serializable). You can also pass an optional time to live value.
-* You can persist your application cache into the shared preferences for future use by calling the method **commitToSharedPref** .
-* You can fetch the data from cache without it internally calling the update method if the data is stale or missing by using the method **getWithoutUpdate** . If you are using this method then you do not have to implement the update method of your cache. You will also have to manually fetch the data and update the cache using **addToCache** method when there is a cache miss.
+*  You can update the cache manually using the **addToCache** method. Use this method if you need to update the cache from a sperate async task . You will need to pass the key , and the value (the value needs to be serializable). You can also pass an optional time to live value.
+*  You can persist your application cache into the shared preferences for future use by calling the method **commitToSharedPref** .
+*  You can fetch the data from cache without it internally calling the update method if the data is stale or missing by using the method **getWithoutUpdate** . If you are using this method then you do not have to implement the update method of your cache. You will also have to manually fetch the data and update the cache using **addToCache** method when there is a cache miss.

@@ -26,6 +26,16 @@ abstract class Cache {
     companion object {
 
         /**
+         * The log message for cache miss.
+         */
+        private const val CACHE_MISS_LOG = "Cache miss due to stale data"
+
+        /**
+         * The tag for logging.
+         */
+        private const val TAG = "COLD_STORAGE"
+
+        /**
          * An instance of object mapper.
          */
         private val objectMapper = jacksonObjectMapper()
@@ -146,20 +156,20 @@ abstract class Cache {
             if (timeToLive != null) {
                 val difference = current - timestamp
                 if (difference > timeToLive) {
-                    Log.i("COLD_STORAGE", "Cache miss due to stale data")
+                    Log.i(TAG, CACHE_MISS_LOG)
                     return true
                 }
                 return false
             } else if (maxTimeToLive != null) {
                 val differenceGlobal = current - timestamp
                 if (differenceGlobal > maxTimeToLive!!) {
-                    Log.i("COLD_STORAGE", "Cache miss due to stale data")
+                    Log.i(TAG, CACHE_MISS_LOG)
                     return true
                 }
-                Log.i("COLD_STORAGE", "Cache hit")
+                Log.i(TAG, "Cache hit")
                 return false
             }
-            Log.i("COLD_STORAGE", "Cache hit")
+            Log.i(TAG, "Cache hit")
             return false
 
         }

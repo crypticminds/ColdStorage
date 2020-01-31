@@ -12,6 +12,9 @@ import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 
+/**
+ * The annotation processor for the freeze annotation.
+ */
 @AutoService(Processor::class) // For registering the service
 @SupportedSourceVersion(SourceVersion.RELEASE_8) // to support Java 8
 @SupportedOptions(FreezeAnnotationProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)

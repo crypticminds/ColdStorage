@@ -12,6 +12,9 @@ import org.junit.Test
  */
 class ColdStorageTest {
 
+    /**
+     * Method to reset the values in the cache.
+     */
     @Before
     fun resetValues() {
         mockkStatic(Log::class)
