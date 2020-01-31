@@ -19,7 +19,9 @@ class CacheTest {
 
     private val testKey = "key"
 
-
+    /**
+     * Method tp reset all values in the cache.
+     */
     @Before
     fun resetValues() {
         cacheWithString = CacheWithStringValue()
@@ -54,6 +56,11 @@ class CacheTest {
         cacheWithString.get(testKey, onValueFetchedCallback)
     }
 
+    private val testObject = "TestObject"
+
+    /**
+     * Test for cache initialize.
+     */
     @Test
     fun testInitializeMethod() {
         val allMap = hashMapOf<String, String>()
@@ -72,13 +79,16 @@ class CacheTest {
         for (i in allMap.keys) {
             val value = cacheWithString.getWithoutUpdate(i)
             if (i.contains("Present")) {
-                Assert.assertEquals(i, "TestObject", value)
+                Assert.assertEquals(i, testObject, value)
             } else {
                 Assert.assertNull(value)
             }
         }
     }
 
+    /**
+     * Test for checking commit to shared preferences.
+     */
     @Test
     fun testCommitToSharedPreferences() {
         val allMap = hashMapOf<String, String>()
@@ -112,7 +122,7 @@ class CacheTest {
         val mapper = jacksonObjectMapper()
         for (i in 1..5) {
             val cachedDataModel = CachedDataModel(
-                "TestObject",
+                testObject,
                 System.currentTimeMillis(), 2000
             )
             val modelAsString = mapper.writeValueAsString(cachedDataModel)
@@ -127,7 +137,7 @@ class CacheTest {
         }
         for (i in 1..10) {
             val cachedDataModel = CachedDataModel(
-                "TestObject",
+                testObject,
                 System.currentTimeMillis(), 10
             )
             val modelAsString = mapper.writeValueAsString(cachedDataModel)
@@ -143,6 +153,9 @@ class CacheTest {
     }
 
 
+    /**
+     * An implementation of cache for testing purpose.
+     */
     class CacheWithStringValue : Cache() {
         override fun update(key: String): String? {
             return "key2"

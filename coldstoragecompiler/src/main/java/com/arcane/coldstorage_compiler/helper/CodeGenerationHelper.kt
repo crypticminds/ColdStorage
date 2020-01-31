@@ -111,12 +111,10 @@ class CodeGenerationHelper {
         }
     }
 
-    /**
-     * Converting java types to kotlin types.
-     */
+
     private fun TypeName.javaToKotlinType(): TypeName = if (this is ParameterizedTypeName) {
         (rawType.javaToKotlinType() as ClassName).parameterizedBy(
-            *typeArguments.map { it.javaToKotlinType() }.toTypedArray()
+            listOf(*typeArguments.map { it.javaToKotlinType() }.toTypedArray())
         )
     } else {
         val className = JavaToKotlinClassMap.INSTANCE
@@ -126,9 +124,7 @@ class CodeGenerationHelper {
     }
 
 
-    /**
-     * Method to get the class name from FQFN.
-     */
+
     private fun getClassName(fullyQualifiedName: String): String {
         return fullyQualifiedName.substring(
             fullyQualifiedName.lastIndexOf('.') + 1, fullyQualifiedName.length
@@ -136,9 +132,7 @@ class CodeGenerationHelper {
 
     }
 
-    /**
-     * Method to get the package name from FQFN.
-     */
+
     private fun getPackageName(fullyQualifiedName: String): String {
         return fullyQualifiedName.substring(
             0,
@@ -147,12 +141,7 @@ class CodeGenerationHelper {
 
     }
 
-    /**
-     * Method that generates the code block inside each method.
-     * The logic here is that the actual method will be called
-     * if the value against the key is not available inside the
-     * cache.
-     */
+
     private fun generateCodeBlockForFreeze(
         name: String,
         variables: ArrayList<String>,
@@ -256,13 +245,7 @@ class CodeGenerationHelper {
 
     }
 
-    /**
-     * Method that generates the code block inside each method.
-     * The logic here is that the actual method will be called
-     * if the value against the key is not available inside the
-     * cache.
-     * This code generation block is specific for Refrigerate annotation.
-     */
+
     private fun generateCodeBlockForRefrigerate(
         name: String,
         variables: ArrayList<String>,

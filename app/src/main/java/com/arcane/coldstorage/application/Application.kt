@@ -3,6 +3,9 @@ package com.arcane.coldstorage.application
 import android.app.Application
 import com.arcane.coldstoragecache.cache.Cache
 
+/**
+ * The main application for the example app.
+ */
 class Application : Application() {
 
     /**

@@ -3,14 +3,22 @@ package com.arcane.coldstorage.cache
 import com.arcane.coldstorageannotation.CacheKey
 import com.arcane.coldstorageannotation.Refrigerate
 
+/**
+ * Class showing the usage of refrigerate annotation.
+ */
 class CacheWithRefrigerate {
 
-
+    /**
+     * Method to test refrigerate with no keys.
+     */
     @Refrigerate(operation = "serviceA")
     fun makeCallToSomeService(): String {
         return "B"
     }
 
+    /**
+     * Method to test refrigerate with multiple keys.
+     */
     @Refrigerate(operation = "serviceB")
     fun makeCallToSomeService(@CacheKey key: String,
                               @CacheKey abcd: String,

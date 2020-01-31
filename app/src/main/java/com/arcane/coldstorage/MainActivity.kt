@@ -10,7 +10,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.arcane.coldstorage.cache.ImageCache
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.impl.StringToBitmapConverter
+import kotlin.random.Random
 
+/**
+ * The mainactivity for the example app.
+ * This shows the example of a custom cache layer.
+ *
+ * @author Anurag
+ */
 class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
 
     companion object {
@@ -70,7 +77,7 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     private fun checkImageCaching() {
         val converter = StringToBitmapConverter()
         imageCache.get(
-            URLS.shuffled().take(1)[0],
+            URLS.shuffled(Random(10)).take(1)[0],
             this,
             converter
         )

@@ -7,6 +7,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
+/**
+ * Test for cold storage cache.
+ */
 class ColdStorageTest {
 
     @Before
@@ -18,6 +21,9 @@ class ColdStorageTest {
         every { Log.e(any(), any()) } returns 0
     }
 
+    /**
+     * Test for fetching and putting values in cache.
+     */
     @Test
     fun testCache() {
         Assert.assertNull(ColdStorage.get("key"))

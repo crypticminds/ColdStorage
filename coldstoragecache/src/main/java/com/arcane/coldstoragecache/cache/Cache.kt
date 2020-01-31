@@ -363,11 +363,7 @@ abstract class Cache {
     }
 
 
-    /**
-     * Method to fetch the data from the cache.
-     *
-     * @param key The key for which the data needs to be fetched.
-     */
+
     private fun fetchFromCache(key: String): CachedDataModel? {
         return if (cache.containsKey(key)) {
             val cachedDataModel = cache[key]!!

@@ -9,13 +9,17 @@ import com.arcane.coldstorageannotation.Freeze
 @Freeze(generatedClassName = "MyClassName")
 class CacheWithFreezeWithCustomName {
 
-
-    fun method1() {
-
+    /**
+     * Method to test freeze with no key.
+     */
+    fun method1(): String {
+        return "B"
     }
 
-
-    fun method2(@CacheKey key1: String, key2: String) {
-
+    /**
+     * Method to test freeze with one key.
+     */
+    fun method2(@CacheKey key1: String, key2: String): String {
+        return "C"
     }
 }

@@ -87,9 +87,6 @@ class FreezeAnnotationProcessor : AbstractProcessor() {
         return true
     }
 
-    /**
-     * Method that generates the class.
-     */
     private fun generateClass(
         methods: MutableList<FunSpec>,
         element: Element
@@ -111,7 +108,7 @@ class FreezeAnnotationProcessor : AbstractProcessor() {
 
         val fileName =
             if (element.getAnnotation(Freeze::class.java).generatedClassName.isBlank())
-                "Generated${element.simpleName} " else
+                "Generated${element.simpleName}" else
                 element.getAnnotation(Freeze::class.java).generatedClassName
 
 
