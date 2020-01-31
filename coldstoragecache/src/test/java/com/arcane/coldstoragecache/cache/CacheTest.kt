@@ -13,6 +13,9 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 
+/**
+ * The test for cache layer.
+ */
 class CacheTest {
 
     private lateinit var cacheWithString: Cache
@@ -33,6 +36,9 @@ class CacheTest {
         Cache.clearCache()
     }
 
+    /**
+     * Test cache hit.
+     */
     @Test
     fun testGetFromCacheWithCacheHit() {
         Cache.addToCache(testKey, "testValue")
@@ -45,6 +51,9 @@ class CacheTest {
         cacheWithString.get(testKey, onValueFetchedCallback)
     }
 
+    /**
+     * Test cache miss.
+     */
     @Test
     fun testGetFromCacheWithCacheMiss() {
         val onValueFetchedCallback = object : OnValueFetchedCallback<String?> {

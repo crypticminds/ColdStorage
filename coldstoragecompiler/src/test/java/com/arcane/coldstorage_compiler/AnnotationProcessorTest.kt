@@ -15,6 +15,10 @@ class AnnotationProcessorTest {
 
     private val packageName = "com.example.A"
 
+    private val packageName2 = "package com.example;"
+
+    private val importStatement = "import com.arcane.coldstorageannotation.Refrigerate"
+
     /**
      * Test compilation successful.
      */
@@ -23,9 +27,9 @@ class AnnotationProcessorTest {
         val input = JavaFileObjects.forSourceString(
             packageName,
             Joiner.on(NEW_LINE).join(
-                "package com.example;",
+                packageName2,
                 "",
-                "import com.arcane.coldstorageannotation.Refrigerate;",
+                "$importStatement;",
                 "",
                 "public class A {",
                 "",
@@ -56,9 +60,9 @@ class AnnotationProcessorTest {
         val input = JavaFileObjects.forSourceString(
             packageName,
             Joiner.on(NEW_LINE).join(
-                "package com.example;",
+                packageName2,
                 "",
-                "import com.arcane.coldstorageannotation.Refrigerate;",
+                "$importStatement;",
                 "",
                 "public class A {",
                 "",
@@ -88,9 +92,9 @@ class AnnotationProcessorTest {
         val input = JavaFileObjects.forSourceString(
             packageName,
             Joiner.on(NEW_LINE).join(
-                "package com.example;",
+                packageName2,
                 "",
-                "import com.arcane.coldstorageannotation.Refrigerate;",
+                "$importStatement;",
                 "",
                 "public class A {",
                 "",
@@ -119,9 +123,9 @@ class AnnotationProcessorTest {
         val input = JavaFileObjects.forSourceString(
             packageName,
             Joiner.on(NEW_LINE).join(
-                "package com.example;",
+                packageName2,
                 "",
-                "import com.arcane.coldstorageannotation.Refrigerate;",
+                "$importStatement;",
                 "",
                 "public class A {",
                 "",

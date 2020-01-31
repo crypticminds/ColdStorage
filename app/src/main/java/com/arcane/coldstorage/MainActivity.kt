@@ -71,9 +71,7 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     }
 
 
-    /**
-     * Method to test image caching.
-     */
+
     private fun checkImageCaching() {
         val converter = StringToBitmapConverter()
         imageCache.get(
