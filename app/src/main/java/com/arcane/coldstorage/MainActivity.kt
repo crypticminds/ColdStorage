@@ -1,5 +1,6 @@
 package com.arcane.coldstorage
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.Menu
@@ -12,6 +13,7 @@ import com.arcane.coldstorageannotation.LoadImage
 import com.arcane.coldstoragecache.cache.Cache
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.impl.StringToBitmapConverter
+import com.squareup.picasso.Picasso
 import kotlin.random.Random
 
 /**
@@ -38,8 +40,15 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     /**
      * The image view where the images will be displayed.
      */
-    @LoadImage("https://images.unsplash.com/photo-1452857297128-d9c29adba80b?ixlib=rb-1.2.1&w=1000&q=80")
+    @LoadImage("https://www.peta.org/wp-content/uploads/2010/06/iStock_000008440542XSmall1.jpg")
     lateinit var imageView: ImageView
+
+    @LoadImage("https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png")
+    lateinit var imageView2: ImageView
+
+    // @LoadImage("https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png")
+    lateinit var imageView3: ImageView
+
 
     /**
      * The button used to change the image.
@@ -50,12 +59,20 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         imageView = findViewById(R.id.image_view)
-        changeButton = findViewById(R.id.change)
-//        checkImageCaching()
-//        changeButton.setOnClickListener {
-//            checkImageCaching()
-//        }
+        imageView2 = findViewById(R.id.image_view_2)
+        imageView3 = findViewById(R.id.imageView2)
+
+
         Cache.bind(this)
+
+        Picasso.get()
+            .load("https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png")
+            .into(imageView3)
+
+        findViewById<Button>(R.id.button).setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

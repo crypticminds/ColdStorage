@@ -257,12 +257,11 @@ abstract class Cache {
             try {
                 if (generatedBindClass == null) {
                     generatedBindClass = Class.forName(BIND_CLASS_NAME)
-                    generatedBindClass!!.getMethod(
-                        "bind${activity.javaClass.simpleName}",
-                        activity.javaClass
-                    ).invoke(generatedBindClass!!.newInstance(), activity)
-
                 }
+                generatedBindClass!!.getMethod(
+                    "bind${activity.javaClass.simpleName}",
+                    activity.javaClass
+                ).invoke(generatedBindClass!!.newInstance(), activity)
             } catch (e: Exception) {
                 Log.e(TAG, "Unable to bind elements to cache in class ${activity.javaClass.name}")
             }

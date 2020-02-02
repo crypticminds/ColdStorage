@@ -150,6 +150,10 @@ class LoadImageProcessor : AbstractProcessor() {
             "ImageDownloadHelper"
         )
 
+        val coldStorage = ClassName("com.arcane.coldstoragecache.cache", "ColdStorage")
+
+        val bitmap = ClassName("android.graphics", "Bitmap")
+
 
         val builder = CodeBlock.builder()
         builder.addStatement("val map = hashMapOf<%T , %T>()", imageView, loadImageConfig)
@@ -170,10 +174,24 @@ class LoadImageProcessor : AbstractProcessor() {
         return builder.addStatement("map.forEach { entry ->")
             .beginControlFlow("%T.executorService.execute", cacheClass)
             .addStatement("")
-            .addStatement("val bitmap = %T.downloadImage(entry.value.url)", imageDownloadHelper)
+            .beginControlFlow("if(%T.get(entry.value.url) != null)", coldStorage)
+            .beginControlFlow("$activityName.runOnUiThread  ")
+            .addStatement(
+                "entry.key.setImageBitmap(%T.get(entry.value.url) as %T)",
+                coldStorage,
+                bitmap
+            )
+            .endControlFlow()
+            .nextControlFlow("else")
+            .addStatement(
+                "val bitmap =  %T.downloadImage(entry.value.url)  ",
+                imageDownloadHelper
+            )
             .beginControlFlow("if(bitmap != null)")
+            .addStatement("%T.put(entry.value.url,bitmap,null)", coldStorage)
             .beginControlFlow("$activityName.runOnUiThread  ")
             .addStatement("entry.key.setImageBitmap(bitmap)")
+            .endControlFlow()
             .endControlFlow()
             .endControlFlow()
             .endControlFlow()

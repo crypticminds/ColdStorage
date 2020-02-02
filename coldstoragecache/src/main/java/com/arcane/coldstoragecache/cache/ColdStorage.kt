@@ -35,10 +35,10 @@ class ColdStorage {
                         coldStorageModel.timestamp
                     )
                 ) {
-                    Log.i("COLS_STORAGE", "data is stale")
+                    Log.i("COLD_STORAGE", "data is stale")
                     null
                 } else {
-                    Log.i("COLS_STORAGE", "Cache hit")
+                    Log.i("COLD_STORAGE", "Cache hit")
                     coldStorageModel.objectToCache
                 }
             }
