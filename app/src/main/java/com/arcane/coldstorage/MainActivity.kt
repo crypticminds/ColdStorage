@@ -40,10 +40,17 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     /**
      * The image view where the images will be displayed.
      */
-    @LoadImage("https://www.peta.org/wp-content/uploads/2010/06/iStock_000008440542XSmall1.jpg")
+    @LoadImage(
+        "https://www.peta.org/wp-content/uploads/2010/06/iStock_000008440542XSmall1.jpg",
+        R.drawable.ic_launcher_background
+    )
     lateinit var imageView: ImageView
 
-    @LoadImage("https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png")
+    @LoadImage(
+        "https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png",
+        R.drawable.test_load,
+        enableLoadingAnimation = true
+    )
     lateinit var imageView2: ImageView
 
     // @LoadImage("https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png")

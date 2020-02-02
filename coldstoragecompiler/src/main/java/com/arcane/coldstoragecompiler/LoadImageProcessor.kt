@@ -145,9 +145,14 @@ class LoadImageProcessor : AbstractProcessor() {
             "ImageView"
         )
 
-        val imageDownloadHelper = ClassName(
+        val bindHelper = ClassName(
             "com.arcane.coldstoragecache.helper",
-            "ImageDownloadHelper"
+            "BindHelper"
+        )
+
+        val imageHelper = ClassName(
+            "com.arcane.coldstoragecache.helper",
+            "ImageHelper"
         )
 
         val coldStorage = ClassName("com.arcane.coldstoragecache.cache", "ColdStorage")
@@ -167,7 +172,10 @@ class LoadImageProcessor : AbstractProcessor() {
         parameterList.forEach { parameter ->
             val loadImage = parameter.getAnnotation(LoadImage::class.java)
             builder.addStatement(
-                "map.put($activityName.${parameter.simpleName} , LoadImageConfig(\"${loadImage.url}\"))"
+                "map.put($activityName.${parameter.simpleName}," +
+                        " LoadImageConfig(\"${loadImage.url}\"," +
+                        "${loadImage.placeHolder}, " +
+                        "${loadImage.enableLoadingAnimation}))"
             )
         }
 
@@ -180,16 +188,26 @@ class LoadImageProcessor : AbstractProcessor() {
                 "entry.key.setImageBitmap(%T.get(entry.value.url) as %T)",
                 coldStorage,
                 bitmap
-            )
-            .endControlFlow()
+            ).endControlFlow()
             .nextControlFlow("else")
+            .addStatement("val animator = %T.animateImageView(entry.key)", bindHelper)
+            .beginControlFlow("if (entry.value.placeHolder != -1)")
+            .beginControlFlow("$activityName.runOnUiThread  ")
+            .beginControlFlow("if(entry.value.enableLoadingAnimation)")
+            .addStatement("animator.start()")
+            .endControlFlow()
+            .addStatement("entry.key.setImageResource(entry.value.placeHolder)")
+            .endControlFlow()
+            .endControlFlow()
             .addStatement(
                 "val bitmap =  %T.downloadImage(entry.value.url)  ",
-                imageDownloadHelper
+                imageHelper
             )
             .beginControlFlow("if(bitmap != null)")
             .addStatement("%T.put(entry.value.url,bitmap,null)", coldStorage)
             .beginControlFlow("$activityName.runOnUiThread  ")
+            .addStatement("animator.cancel()")
+            .addStatement("entry.key.rotation = 0f")
             .addStatement("entry.key.setImageBitmap(bitmap)")
             .endControlFlow()
             .endControlFlow()

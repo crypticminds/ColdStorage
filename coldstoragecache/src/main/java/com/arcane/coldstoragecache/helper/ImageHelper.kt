@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.net.URL
 
-class ImageDownloadHelper {
+class ImageHelper {
 
     companion object {
 
