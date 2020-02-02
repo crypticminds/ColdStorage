@@ -8,6 +8,8 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.arcane.coldstorage.cache.ImageCache
+import com.arcane.coldstorageannotation.LoadImage
+import com.arcane.coldstoragecache.cache.Cache
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.impl.StringToBitmapConverter
 import kotlin.random.Random
@@ -36,7 +38,8 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     /**
      * The image view where the images will be displayed.
      */
-    private lateinit var imageView: ImageView
+    @LoadImage("https://images.unsplash.com/photo-1452857297128-d9c29adba80b?ixlib=rb-1.2.1&w=1000&q=80")
+    lateinit var imageView: ImageView
 
     /**
      * The button used to change the image.
@@ -48,10 +51,11 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
         setContentView(R.layout.activity_main)
         imageView = findViewById(R.id.image_view)
         changeButton = findViewById(R.id.change)
-        checkImageCaching()
-        changeButton.setOnClickListener {
-            checkImageCaching()
-        }
+//        checkImageCaching()
+//        changeButton.setOnClickListener {
+//            checkImageCaching()
+//        }
+        Cache.bind(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -69,7 +73,6 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
 
 
     private fun checkImageCaching() {
