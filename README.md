@@ -14,6 +14,9 @@
 > Check out the post for usage of @Freeze annotation
 > <https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-3-3d4cfcb57df0>
 >
+> Check out the post for usage of @LoadImage annotation
+> <https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-4-18e7b066e9c2>
+>
 > Examples can be found here :-
 > <https://github.com/crypticminds/coldstorageexamples>
 
@@ -25,9 +28,9 @@
 
 *  Add the dependencies
 
-        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:3.0.1"  
-        kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:3.0.1"
-    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:3.0.1"
+        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:4.0.0"  
+        kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:4.0.0"
+    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:4.0.0"
     
 ***Check the latest release to get the newest features.***
      
@@ -62,6 +65,45 @@
             android:name=".application.Application">
     </application>
 ```
+## @LoadImage Annotation (BETA)
+
+You can annotate any ImageView present in an Activity , fragement or another view to load images from an URL and cache it for future use.
+
+```kotlin
+@LoadImage(
+        R.id.image_1,
+        "https://images.unsplash.com/photo-1549740425-5e9ed4d8cd34?ixlib=rb-1.2.1&w=1000&q=80",
+        placeHolder = R.drawable.loading, enableLoadingAnimation = true
+    )
+    lateinit var imageWithAnimation: ImageView
+```
+
+### Parameters 
+
+* imageViewResourceId  : The resource id of the image view (Eg R.id.imageView1)
+* url : The url from which the image will be downloaded 
+* placeHolder (optional) : The resource id of a drawable that will be displayed until the image is downloaded.
+* enableLoadingAnimation (optional) : To enable an animation like a rotating loading spinner set this to true. This will
+  only work if a placeholder image has been supplied.
+  
+  For upcoming features please check the wiki. Contributions for new features are welcome.
+ 
+After the image views have been annotated , bind the class where the image views are present using the method
+Cache.bind(objectOfClass).
+
+You can pass the activity, fragement or the view to which the annotated ImageViews belong to.
+In an activity, the method should be called after setContentView and in a fragemnt it should be called
+in onViewCreated method.
+
+```kotlin
+     override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.load_image_example)
+            Cache.bind(this)
+        }
+```
+
+Currently the cache can only be bound to an Activity , fragment or view.
 
 ## @Freeze Annotation
 

@@ -1,6 +1,6 @@
-package com.arcane.coldstorage_compiler
+package com.arcane.coldstoragecompiler
 
-import com.arcane.coldstorage_compiler.helper.CodeGenerationHelper
+import com.arcane.coldstoragecompiler.helper.CodeGenerationHelper
 import com.arcane.coldstorageannotation.Refrigerate
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec

@@ -1,12 +1,18 @@
 package com.arcane.coldstoragecache.cache
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
+import android.view.View
+import androidx.core.util.Preconditions
+import androidx.fragment.app.Fragment
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.IConverter
 import com.arcane.coldstoragecache.model.CachedDataModel
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
 /**
@@ -24,6 +30,28 @@ abstract class Cache {
      * The static methods and variables of the class.
      */
     companion object {
+
+        /**
+         * The maximum number of threads that can be spawned
+         */
+        private var maxThread: Int = 10
+
+
+        /**
+         * The executor service that will be used by cold storage for
+         * all concurrent operations.
+         */
+        var executorService: ExecutorService = Executors
+            .newFixedThreadPool(maxThread)
+
+
+        private var generatedBindClass: Class<*>? = null
+
+
+        /**
+         * The name of the generated bind class.
+         */
+        private const val BIND_CLASS_NAME = "com.arcane.generated.BindingClass"
 
         /**
          * The log message for cache miss.
@@ -51,11 +79,6 @@ abstract class Cache {
          */
         private val cache: ConcurrentHashMap<String, CachedDataModel> =
             ConcurrentHashMap()
-
-        /**
-         * The generated map by the annotation processor.
-         */
-        private var generatedReferenceMap: Map<String, String> = hashMapOf()
 
         /**
          * The max amount of data that can be stored in app memory.
@@ -87,14 +110,19 @@ abstract class Cache {
          *
          * @param timeToLive The global time to live for the cache. (In milliseconds)
          *
+         * @param maxBackgroundThreads The maximum number of threads that will be spawned
+         * during downloads
+         *
          */
         fun initialize(
             context: Context,
             maxAllocatedMemory: Int = 1024 * 1024 * 20,
-            timeToLive: Int? = null
+            timeToLive: Int? = null,
+            maxBackgroundThreads: Int = 10
         ) {
             maxAllocateCachedMemory = maxAllocatedMemory
             maxTimeToLive = timeToLive
+            executorService = Executors.newFixedThreadPool(maxBackgroundThreads)
             //running entire operation on a separate thread to not block
             //the UI thread.
             thread {
@@ -220,6 +248,43 @@ abstract class Cache {
             }
         }
 
+        /**
+         * Method to bind the class to the cache while using the @LoadImage annotation.
+         * This method takes care of connecting the imageView in the binding class
+         * to the cache.
+         *
+         * Currently only activities , fragments and Views are supported for binding.
+         * For other class please raise a request at
+         * https://github.com/crypticminds/ColdStorage
+         *
+         * @param classToBind the class in which the annotation @LoadImage is used.
+         * The class will be bound to the cache so that the image views inside it will
+         * be able to access the cached images.
+         *
+         */
+        fun bind(classToBind: Any) {
+            Preconditions.checkArgument(
+                (classToBind is Activity || classToBind is Fragment || classToBind is View)
+                , "Only activities , fragments and views are currently supported for binding." +
+                        " For binding in other " +
+                        "classes please raise a request at c"
+            )
+            try {
+                if (generatedBindClass == null) {
+                    generatedBindClass = Class.forName(BIND_CLASS_NAME)
+                }
+                generatedBindClass!!.getMethod(
+                    "bind${classToBind.javaClass.simpleName}",
+                    classToBind.javaClass
+                ).invoke(generatedBindClass!!.newInstance(), classToBind)
+            } catch (e: Exception) {
+                Log.e(
+                    TAG,
+                    "Unable to bind elements to cache in class ${classToBind.javaClass.name}",
+                    e
+                )
+            }
+        }
     }
 
     /**
@@ -373,7 +438,6 @@ abstract class Cache {
     }
 
 
-
     private fun fetchFromCache(key: String): CachedDataModel? {
         return if (cache.containsKey(key)) {
             val cachedDataModel = cache[key]!!
@@ -418,4 +482,5 @@ abstract class Cache {
      * @return the serialized value.
      */
     abstract fun update(key: String): String?
+
 }

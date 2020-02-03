@@ -1,4 +1,4 @@
-package com.arcane.coldstorage_compiler
+package com.arcane.coldstoragecompiler
 
 import com.google.common.base.Joiner
 import com.google.testing.compile.CompilationSubject.assertThat
