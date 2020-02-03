@@ -3,6 +3,9 @@ package com.arcane.coldstoragecache.cache
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import android.view.View
+import androidx.core.util.Preconditions
+import androidx.fragment.app.Fragment
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.IConverter
 import com.arcane.coldstoragecache.model.CachedDataModel
@@ -76,11 +79,6 @@ abstract class Cache {
          */
         private val cache: ConcurrentHashMap<String, CachedDataModel> =
             ConcurrentHashMap()
-
-        /**
-         * The generated map by the annotation processor.
-         */
-        private var generatedReferenceMap: Map<String, String> = hashMapOf()
 
         /**
          * The max amount of data that can be stored in app memory.
@@ -251,23 +249,42 @@ abstract class Cache {
         }
 
         /**
-         * Method used to bind annotated views in a activity to the cache.
+         * Method to bind the class to the cache while using the @LoadImage annotation.
+         * This method takes care of connecting the imageView in the binding class
+         * to the cache.
+         *
+         * Currently only activities , fragments and Views are supported for binding.
+         * For other class please raise a request at
+         * https://github.com/crypticminds/ColdStorage
+         *
+         * @param classToBind the class in which the annotation @LoadImage is used.
+         * The class will be bound to the cache so that the image views inside it will
+         * be able to access the cached images.
+         *
          */
-        fun bind(activity: Activity) {
+        fun bind(classToBind: Any) {
+            Preconditions.checkArgument(
+                (classToBind is Activity || classToBind is Fragment || classToBind is View)
+                , "Only activities , fragments and views are currently supported for binding." +
+                        " For binding in other " +
+                        "classes please raise a request at c"
+            )
             try {
                 if (generatedBindClass == null) {
                     generatedBindClass = Class.forName(BIND_CLASS_NAME)
                 }
                 generatedBindClass!!.getMethod(
-                    "bind${activity.javaClass.simpleName}",
-                    activity.javaClass
-                ).invoke(generatedBindClass!!.newInstance(), activity)
+                    "bind${classToBind.javaClass.simpleName}",
+                    classToBind.javaClass
+                ).invoke(generatedBindClass!!.newInstance(), classToBind)
             } catch (e: Exception) {
-                Log.e(TAG, "Unable to bind elements to cache in class ${activity.javaClass.name}")
+                Log.e(
+                    TAG,
+                    "Unable to bind elements to cache in class ${classToBind.javaClass.name}",
+                    e
+                )
             }
-            //from the generated class pass values into the views.
         }
-
     }
 
     /**

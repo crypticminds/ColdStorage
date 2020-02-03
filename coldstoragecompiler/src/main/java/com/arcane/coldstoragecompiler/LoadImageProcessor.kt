@@ -90,8 +90,7 @@ class LoadImageProcessor : AbstractProcessor() {
         val methods: MutableList<FunSpec> = arrayListOf()
 
         classToFieldsMap.forEach { entry ->
-            val className = entry.key.simpleName
-                .toString().toLowerCase()
+            val className = "target"
 
             methods.add(
                 FunSpec.builder("bind${entry.key.simpleName}")
@@ -129,8 +128,9 @@ class LoadImageProcessor : AbstractProcessor() {
 
 
     //TODO the url can also point to a gif
+    @Suppress("SameParameterValue")
     private fun generateCodeBlockForActivity(
-        activityName: String, parameterList: List<Element>
+        target: String, parameterList: List<Element>
     ): CodeBlock {
 
         val cacheClass = ClassName("com.arcane.coldstoragecache.cache", "Cache")
@@ -169,33 +169,39 @@ class LoadImageProcessor : AbstractProcessor() {
                 )
             )
 
+        //  .beginControlFlow("$activityName.runOnUiThread  ")
         parameterList.forEach { parameter ->
             val loadImage = parameter.getAnnotation(LoadImage::class.java)
-            builder.addStatement(
-                "map.put($activityName.${parameter.simpleName}," +
-                        " LoadImageConfig(\"${loadImage.url}\"," +
-                        "${loadImage.placeHolder}, " +
-                        "${loadImage.enableLoadingAnimation}))"
-            )
+            builder
+                .addStatement(
+                    "$target.${parameter.simpleName} = " +
+                            "%T.bindViewToResource($target ," +
+                            " ${loadImage.imageViewResourceId})", bindHelper
+                )
+                .addStatement(
+                    "map.put($target.${parameter.simpleName}," +
+                            " LoadImageConfig(\"${loadImage.url}\"," +
+                            "${loadImage.placeHolder}, " +
+                            "${loadImage.enableLoadingAnimation}," +
+                            "${loadImage.imageViewResourceId}))"
+                )
         }
+
+        //builder.endControlFlow()
 
         return builder.addStatement("map.forEach { entry ->")
             .beginControlFlow("%T.executorService.execute", cacheClass)
             .addStatement("")
             .beginControlFlow("if(%T.get(entry.value.url) != null)", coldStorage)
-            .beginControlFlow("$activityName.runOnUiThread  ")
             .addStatement(
-                "entry.key.setImageBitmap(%T.get(entry.value.url) as %T)",
-                coldStorage,
-                bitmap
-            ).endControlFlow()
+                "%T.setImageInView(entry.key,%T.get(entry.value.url) as %T)"
+                , imageHelper, coldStorage, bitmap
+            )
             .nextControlFlow("else")
             .addStatement("val animator = %T.animateImageView(entry.key)", bindHelper)
             .beginControlFlow("if (entry.value.placeHolder != -1)")
-            .beginControlFlow("$activityName.runOnUiThread  ")
             .beginControlFlow("if(entry.value.enableLoadingAnimation)")
-            .addStatement("animator.start()")
-            .endControlFlow()
+            .addStatement("%T.startAnimation(entry.key,animator)", imageHelper)
             .addStatement("entry.key.setImageResource(entry.value.placeHolder)")
             .endControlFlow()
             .endControlFlow()
@@ -205,11 +211,7 @@ class LoadImageProcessor : AbstractProcessor() {
             )
             .beginControlFlow("if(bitmap != null)")
             .addStatement("%T.put(entry.value.url,bitmap,null)", coldStorage)
-            .beginControlFlow("$activityName.runOnUiThread  ")
-            .addStatement("animator.cancel()")
-            .addStatement("entry.key.rotation = 0f")
-            .addStatement("entry.key.setImageBitmap(bitmap)")
-            .endControlFlow()
+            .addStatement("%T.setImageInView(entry.key,bitmap,animator)", imageHelper)
             .endControlFlow()
             .endControlFlow()
             .endControlFlow()

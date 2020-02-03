@@ -3,7 +3,9 @@ package com.arcane.coldstorageannotation
 /**
  * An annotation to load images directly into a image view.
  *
- * @param url The url from where the image will be downloaded
+ * @param imageViewResourceId The resource id of the imageView.
+ *
+ * @param url The url from where the image will be downloaded.
  *
  * @param placeHolder The resource id of the placeholder image that should be displayed
  * til the image has been downloaded. (optional)
@@ -21,11 +23,6 @@ package com.arcane.coldstorageannotation
  * background and enabling the animation will rotate the image which will give the impression
  * of a circular progress bar.
  *
- * @param placeholderHeight Height of the loading icon. By default the image takes up the
- * entire imageview.
- *
- * @param placeholderWidth Width of the loading icon. By default the image takes up the
- * entire imageview.
  * TODO : Accept custom animation classes.
  *
  * TODO : Accept boolean to decide whether to store the image to disk for future use.
@@ -35,6 +32,8 @@ package com.arcane.coldstorageannotation
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.FIELD)
 annotation class LoadImage(
+
+    val imageViewResourceId: Int,
 
     val url: String,
 

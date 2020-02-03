@@ -12,25 +12,16 @@ import com.arcane.coldstorage.cache.ImageCache
 import com.arcane.coldstorageannotation.LoadImage
 import com.arcane.coldstoragecache.cache.Cache
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
-import com.arcane.coldstoragecache.converter.impl.StringToBitmapConverter
 import com.squareup.picasso.Picasso
-import kotlin.random.Random
 
 /**
  * The mainactivity for the example app.
- * This shows the example of a custom cache layer.
+ * This shows the example of @LoadImage annotation.
  *
  * @author Anurag
  */
 class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
 
-    companion object {
-        val URLS = arrayListOf(
-            "https://images.unsplash.com/photo-1452857297128-d9c29adba80b?ixlib=rb-1.2.1&w=1000&q=80",
-            "https://i.ytimg.com/vi/Pc20_oJQusc/maxresdefault.jpg",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1HHodR1IgMESyE95LqwLRTRFnfCpmKKw5RQHqnP_kWV9ugKaiIQ&s"
-        )
-    }
 
     /**
      * An instance of image cache.
@@ -41,12 +32,13 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
      * The image view where the images will be displayed.
      */
     @LoadImage(
-        "https://www.peta.org/wp-content/uploads/2010/06/iStock_000008440542XSmall1.jpg",
-        R.drawable.ic_launcher_background
+        R.id.image_view,
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-GsnyKLBNYVfl0Uuq-PGreWRTwdAIRGL_BOtG24SayIS9HDwq&s"
     )
     lateinit var imageView: ImageView
 
     @LoadImage(
+        R.id.image_view_2,
         "https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png",
         R.drawable.test_load,
         enableLoadingAnimation = true
@@ -57,23 +49,16 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
     lateinit var imageView3: ImageView
 
 
-    /**
-     * The button used to change the image.
-     */
-    private lateinit var changeButton: Button
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        imageView = findViewById(R.id.image_view)
-        imageView2 = findViewById(R.id.image_view_2)
         imageView3 = findViewById(R.id.imageView2)
 
 
         Cache.bind(this)
 
         Picasso.get()
-            .load("https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png")
+            .load("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-GsnyKLBNYVfl0Uuq-PGreWRTwdAIRGL_BOtG24SayIS9HDwq&s")
             .into(imageView3)
 
         findViewById<Button>(R.id.button).setOnClickListener {
@@ -98,16 +83,6 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
         }
     }
 
-
-    private fun checkImageCaching() {
-        val converter = StringToBitmapConverter()
-        imageCache.get(
-            URLS.shuffled(Random(10)).take(1)[0],
-            this,
-            converter
-        )
-
-    }
 
     /**
      * When the image is downloaded , adding the image to

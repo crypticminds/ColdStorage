@@ -9,5 +9,7 @@ class LoadImageConfig(
 
     val placeHolder: Int,
 
-    val enableLoadingAnimation: Boolean
+    val enableLoadingAnimation: Boolean,
+
+    val imageViewResourceId: Int
 )
