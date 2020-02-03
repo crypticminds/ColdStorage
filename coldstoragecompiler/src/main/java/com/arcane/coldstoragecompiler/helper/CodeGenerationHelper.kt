@@ -1,4 +1,4 @@
-package com.arcane.coldstorage_compiler.helper
+package com.arcane.coldstoragecompiler.helper
 
 import com.arcane.coldstorageannotation.CacheKey
 import com.arcane.coldstorageannotation.Freeze
@@ -122,7 +122,6 @@ class CodeGenerationHelper {
         if (className == null) this
         else ClassName.bestGuess(className)
     }
-
 
 
     private fun getClassName(fullyQualifiedName: String): String {
@@ -369,6 +368,9 @@ class CodeGenerationHelper {
         const val CALL_BACK_INTERFACE_NAME = "OnOperationSuccessfulCallback"
 
         const val KEY_VARIABLE = "thisvariablenameisspecial"
+
+        const val KAPT_KOTLIN_GENERATED_OPTION_NAME = "kapt.kotlin.generated"
+
     }
 
 }

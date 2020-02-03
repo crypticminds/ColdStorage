@@ -23,6 +23,11 @@ class ColdStorage {
         private val cacheMap: ConcurrentHashMap<String, ColdStorageModel> = ConcurrentHashMap()
 
         /**
+         * TAG for logging.
+         */
+        private const val TAG = "COLD_STORAGE"
+
+        /**
          * Method to get a value from the cache.
          *
          * @param key The key for which the value needs to be fetched.
@@ -35,10 +40,10 @@ class ColdStorage {
                         coldStorageModel.timestamp
                     )
                 ) {
-                    Log.i("COLS_STORAGE", "data is stale")
+                    Log.i(TAG, "data is stale")
                     null
                 } else {
-                    Log.i("COLS_STORAGE", "Cache hit")
+                    Log.i(TAG, "Cache hit")
                     coldStorageModel.objectToCache
                 }
             }
@@ -50,7 +55,7 @@ class ColdStorage {
          */
         fun put(key: String, value: Any?, timeToLive: Long?) {
             cacheMap[key] = ColdStorageModel(value!!, System.currentTimeMillis(), timeToLive)
-            Log.i("COLD_STORAGE", "Putting value in cache")
+            Log.i(TAG, "Putting value in cache")
         }
 
     }
