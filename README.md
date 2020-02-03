@@ -1,5 +1,5 @@
 # ColdStorage 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/946075aa2cc14be3af73eb8a9fc2352b)](https://www.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crypticminds/ColdStorage&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.com/crypticminds/ColdStorage.svg?branch=master)](https://travis-ci.com/crypticminds/ColdStorage)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/946075aa2cc14be3af73eb8a9fc2352b)](https://www.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crypticminds/ColdStorage&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.com/crypticminds/ColdStorage.svg?branch=master)](https://travis-ci.com/crypticminds/ColdStorage)
 
 **A lightweight caching library for android written in Kotlin.**
 
