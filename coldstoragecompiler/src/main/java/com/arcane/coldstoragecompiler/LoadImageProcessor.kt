@@ -12,6 +12,11 @@ import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 
+/**
+ * Annotation processor for @LoadImage annotation.
+ *
+ * @author Anurag.
+ */
 @AutoService(Processor::class) // For registering the service
 @SupportedSourceVersion(SourceVersion.RELEASE_8) // to support Java 8
 @SupportedOptions(CodeGenerationHelper.KAPT_KOTLIN_GENERATED_OPTION_NAME)
@@ -101,7 +106,7 @@ class LoadImageProcessor : AbstractProcessor() {
                                 entry.key.asType().asTypeName()
                             ).build()
                     )
-                    .addCode(generateCodeBlockForActivity(className, entry.value))
+                    .addCode(generateCodeBlock(className, entry.value))
                     .build()
             )
         }
@@ -129,7 +134,7 @@ class LoadImageProcessor : AbstractProcessor() {
 
     //TODO the url can also point to a gif
     @Suppress("SameParameterValue")
-    private fun generateCodeBlockForActivity(
+    private fun generateCodeBlock(
         target: String, parameterList: List<Element>
     ): CodeBlock {
 
@@ -198,7 +203,7 @@ class LoadImageProcessor : AbstractProcessor() {
                 , imageHelper, coldStorage, bitmap
             )
             .nextControlFlow("else")
-            .addStatement("val animator = %T.animateImageView(entry.key)", bindHelper)
+            .addStatement("val animator = %T.animateImageView(entry.key)", imageHelper)
             .beginControlFlow("if (entry.value.placeHolder != -1)")
             .beginControlFlow("if(entry.value.enableLoadingAnimation)")
             .addStatement("%T.startAnimation(entry.key,animator)", imageHelper)
@@ -219,6 +224,4 @@ class LoadImageProcessor : AbstractProcessor() {
             .build()
 
     }
-
-
 }
