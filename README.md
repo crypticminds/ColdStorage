@@ -20,6 +20,8 @@
 > Examples can be found here :-
 > <https://github.com/crypticminds/coldstorageexamples>
 
+### For detailed description of each component, usage and examples check the [wiki](https://github.com/crypticminds/ColdStorage/wiki)
+
 ## Setup
 
 *  Add kotlin-kapt gradle plugin to **app build.gradle** file
@@ -54,8 +56,8 @@
 
 *  Register your application in the android manifest file by providing the **android:name** attribute
 
-```xml
-<application
+    ```xml
+    <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -64,7 +66,7 @@
             android:theme="@style/AppTheme"
             android:name=".application.Application">
     </application>
-```
+    ```
 ## @LoadImage Annotation (BETA)
 
 You can annotate any ImageView present in an Activity , fragement or another view to load images from an URL and cache it for future use.
@@ -85,8 +87,7 @@ You can annotate any ImageView present in an Activity , fragement or another vie
 * placeHolder (optional) : The resource id of a drawable that will be displayed until the image is downloaded.
 * enableLoadingAnimation (optional) : To enable an animation like a rotating loading spinner set this to true. This will
   only work if a placeholder image has been supplied.
-  
-  For upcoming features please check the wiki. Contributions for new features are welcome.
+
  
 After the image views have been annotated , bind the class where the image views are present using the method
 Cache.bind(objectOfClass).
@@ -212,18 +213,9 @@ The generated method will have the same name and accept the same variables as th
 > a regular class in your project. Your IDE will be able to index it
 > after it is generated and you will be able see the parameters the generated functions will accept. The generated file will change when you change your annotated functions.
 
-## Example 
 
-<https://github.com/crypticminds/coldstorageexamples>
+## Create a custom cache layer
 
-## Basic Usage (Without annotations)
-
-Add the library to your build.gradle file
-
-``` 
- implementation "com.github.crypticminds.ColdStorage:coldstoragecache:2.0.1"
- ```
- ***Check the latest release to get the newest features.***
 
  Create your cache layer by extending the **Cache class**. You will have to implement the update method.
  The update method should take care of fetching the data when the data is stale or is not present in the cache.
