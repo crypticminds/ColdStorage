@@ -45,7 +45,7 @@ class CacheTest {
         val onValueFetchedCallback = object : OnValueFetchedCallback<String?> {
             override fun valueFetched(output: String?) {
                 Assert.assertNotNull(output)
-                Assert.assertEquals(output!!, "testValue")
+                Assert.assertEquals(output!!.toString(), "testValue")
             }
         }
         cacheWithString.get(testKey, onValueFetchedCallback)
@@ -75,12 +75,20 @@ class CacheTest {
         val allMap = hashMapOf<String, String>()
         val applicationContext = Mockito.mock(Context::class.java)
         val sharedPreferences = Mockito.mock(SharedPreferences::class.java)
+        val imageSharedPreferences = Mockito.mock(SharedPreferences::class.java)
         Mockito.`when`(
             applicationContext.getSharedPreferences(
-                Mockito.anyString(),
-                Mockito.anyInt()
+                "coldstoragesharedpref",
+                Context.MODE_PRIVATE
             )
         ).thenReturn(sharedPreferences)
+        Mockito.`when`(
+            applicationContext.getSharedPreferences(
+                "image-pref",
+                Context.MODE_PRIVATE
+            )
+        ).thenReturn(imageSharedPreferences)
+        mockImagesDataInSharedPref(imageSharedPreferences)
         mockDataInSharedPref(sharedPreferences, allMap)
         Cache.initialize(applicationContext)
         Thread.sleep(1000)
@@ -104,12 +112,20 @@ class CacheTest {
         val applicationContext = Mockito.mock(Context::class.java)
         val sharedPreferences = Mockito.mock(SharedPreferences::class.java)
         val editor = Mockito.mock(SharedPreferences.Editor::class.java)
+        val imageSharedPreferences = Mockito.mock(SharedPreferences::class.java)
         Mockito.`when`(
             applicationContext.getSharedPreferences(
-                Mockito.anyString(),
-                Mockito.anyInt()
+                "coldstoragesharedpref",
+                Context.MODE_PRIVATE
             )
         ).thenReturn(sharedPreferences)
+        Mockito.`when`(
+            applicationContext.getSharedPreferences(
+                "image-pref",
+                Context.MODE_PRIVATE
+            )
+        ).thenReturn(imageSharedPreferences)
+        mockImagesDataInSharedPref(imageSharedPreferences)
         Mockito.`when`(sharedPreferences.edit()).thenReturn(editor)
         Mockito.`when`(editor.putString(Mockito.anyString(), Mockito.anyString()))
             .thenReturn(editor)
@@ -120,6 +136,11 @@ class CacheTest {
         cacheWithString.commitToSharedPref(applicationContext)
         Mockito.verify(sharedPreferences, Mockito.times(5))
             .edit()
+    }
+
+    private fun mockImagesDataInSharedPref(sharedPreferences: SharedPreferences) {
+        Mockito.`when`(sharedPreferences.all).thenReturn(HashMap<String, Any?>())
+
     }
 
 

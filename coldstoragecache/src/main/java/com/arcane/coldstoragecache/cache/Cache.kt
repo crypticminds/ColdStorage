@@ -8,9 +8,9 @@ import androidx.core.util.Preconditions
 import androidx.fragment.app.Fragment
 import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.arcane.coldstoragecache.converter.IConverter
-import com.arcane.coldstoragecache.model.CachedDataModel
+import com.arcane.coldstoragecache.helper.StorageHelper
+import com.arcane.coldstoragecache.model.ColdStorageModel
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
@@ -74,17 +74,19 @@ abstract class Cache {
          */
         private const val SHARED_PREF_NAME = "coldstoragesharedpref"
 
-        /**
-         * The in memory cache.
-         */
-        private val cache: ConcurrentHashMap<String, CachedDataModel> =
-            ConcurrentHashMap()
 
         /**
          * The max amount of data that can be stored in app memory.
          * The default value is 20 Mb
          */
-        private var maxAllocateCachedMemory: Int = 1024 * 1024 * 20
+        internal var maxAllocateCachedMemory: Int = 1024 * 1024 * 20
+
+        /**
+         * The max amount of days any data will be kept in the internal storage
+         * of the device.
+         * Default number of days is 2.
+         */
+        internal var ttlForDiskStorage: Int = 2
 
         /**
          * The max time before a cached data will be considered stale.
@@ -95,6 +97,13 @@ abstract class Cache {
          * override the global TTL.
          */
         private var maxTimeToLive: Int? = null
+
+
+        /**
+         * An instance of storage helper that will be initialized when
+         * Cache.initialize is called.
+         */
+        private var storageHelper: StorageHelper? = null
 
         /**
          * The initialize function is responsible for loading the
@@ -113,19 +122,26 @@ abstract class Cache {
          * @param maxBackgroundThreads The maximum number of threads that will be spawned
          * during downloads
          *
+         * @param timeToLiveForDiskStorage The maximum time in days until which any cached
+         * data will be persisted into internal storage.
+         *
          */
         fun initialize(
             context: Context,
             maxAllocatedMemory: Int = 1024 * 1024 * 20,
             timeToLive: Int? = null,
-            maxBackgroundThreads: Int = 10
+            maxBackgroundThreads: Int = 10,
+            timeToLiveForDiskStorage: Int = 2
         ) {
             maxAllocateCachedMemory = maxAllocatedMemory
             maxTimeToLive = timeToLive
             executorService = Executors.newFixedThreadPool(maxBackgroundThreads)
-            //running entire operation on a separate thread to not block
-            //the UI thread.
+            storageHelper = StorageHelper(context)
+            ttlForDiskStorage = timeToLiveForDiskStorage
             thread {
+                //running entire operation on a separate thread to not block
+                //the UI thread.
+                //thread {
                 val sharedPreferences =
                     context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 val cachedData =
@@ -135,49 +151,37 @@ abstract class Cache {
                 cachedData.forEach { key ->
                     val cachedDataModel = objectMapper.readValue(
                         sharedPreferences.getString(key, ""),
-                        CachedDataModel::class.java
+                        ColdStorageModel::class.java
                     )
                     if (!isDataStale(
                             cachedDataModel.timeToLive,
                             cachedDataModel.timestamp
                         )
                     ) {
-                        cache[key] = cachedDataModel
+                        ColdStorage.cacheMap[key] = cachedDataModel
                     }
                 }
+                //  }
+                storageHelper!!.loadDataIntoMemory()
             }
         }
 
-        /**
-         * Method that will remove data from the cache if it exceeds the max in memory size.
-         * The updated data will be stored in shared preferences.
-         * The method only trims on the basis of the object that has been stored and
-         * does not calculate the exact amount of memory occupied by the
-         * cache.
-         */
-        private fun trimData() {
-            var totalMemory = 0
-            cache.forEach { entry ->
-                // an estimate of the size of the object
-                val sizeOfObject = 36 + (entry.value.objectToCache.length * 2)
-                totalMemory += sizeOfObject
-            }
-            while (totalMemory > maxAllocateCachedMemory) {
-                val minEntry = cache.minBy { entry -> entry.value.timestamp }
 
-                if (minEntry != null) {
-                    totalMemory -= ((minEntry.value.objectToCache.length * 2) + 36)
-                    cache.remove(minEntry.key)
-                } else {
-                    break
-                }
+        fun getStorageHelper(): StorageHelper {
+            if (storageHelper == null) {
+                throw RuntimeException(
+                    "Storage helper is null,this is probably because the cache was not initialized." +
+                            "Use Cache.initialize(context) in the application class."
+                )
             }
+            return storageHelper!!
         }
 
         /**
          * Method that checks if the data is stale.
          *
-         * @param cachedDataModel the cached data.
+         * @param timeToLive the time after which the cache will expire.
+         * @param timestamp the timestamp when the object was cached.
          */
         fun isDataStale(timeToLive: Long?, timestamp: Long): Boolean {
             val current = System.currentTimeMillis()
@@ -206,7 +210,7 @@ abstract class Cache {
          * Method to clear the cache.
          */
         fun clearCache() {
-            cache.clear()
+            ColdStorage.cacheMap.clear()
         }
 
         /**
@@ -222,12 +226,18 @@ abstract class Cache {
          *
          * @param timeToLive the time after which the object will be considered stale.
          */
+        @Deprecated(
+            "Use ColdStorage.put(key,value,timeToLive)",
+            replaceWith = ReplaceWith("ColdStorage.put(key,value,timeToLive)")
+        )
         fun <Value> addToCache(key: String, objectToCache: Value, timeToLive: Long? = null) {
             val objectAsString = objectMapper.writeValueAsString(objectToCache)
-            cache[key] = CachedDataModel(
+            ColdStorage.cacheMap[key] = ColdStorageModel(
                 objectAsString,
-                System.currentTimeMillis(), timeToLive
+                System.currentTimeMillis(),
+                timeToLive
             )
+            ColdStorage.trimData()
         }
 
         /**
@@ -236,12 +246,20 @@ abstract class Cache {
          * @param key The key for which the value is fetched.
          * If the key is not present in the cache null is returned.
          */
-        fun get(key: String): CachedDataModel? {
-            return if (cache.containsKey(key)) {
-                if (isDataStale(cache[key]!!.timeToLive, cache[key]!!.timestamp)) {
+        @Deprecated(
+            "Use ColdStorage.get(key)",
+            replaceWith = ReplaceWith("ColdStorage.get(key)")
+        )
+        fun get(key: String): ColdStorageModel? {
+            return if (ColdStorage.cacheMap.containsKey(key)) {
+                if (isDataStale(
+                        ColdStorage.cacheMap[key]!!.timeToLive,
+                        ColdStorage.cacheMap[key]!!.timestamp
+                    )
+                ) {
                     null
                 } else {
-                    cache[key]
+                    ColdStorage.cacheMap[key]
                 }
             } else {
                 null
@@ -313,17 +331,17 @@ abstract class Cache {
         timeToLive: Long? = null
     ) {
         thread {
-            val cachedData = fetchFromCache(key)
+            val cachedData = ColdStorage.get(key)
             if (cachedData != null) {
-                onValueFetchedCallback.valueFetched(cachedData.objectToCache)
+                onValueFetchedCallback.valueFetched(cachedData.toString())
                 return@thread
             }
             val result = update(key)
             if (result != null) {
                 val cachedDataModel =
-                    CachedDataModel(result, System.currentTimeMillis(), timeToLive)
-                cache[key] = cachedDataModel
-                onValueFetchedCallback.valueFetched(cachedDataModel.objectToCache)
+                    ColdStorageModel(result, System.currentTimeMillis(), timeToLive)
+                ColdStorage.cacheMap[key] = cachedDataModel
+                onValueFetchedCallback.valueFetched(cachedDataModel.objectToCache.toString())
                 return@thread
             }
             onValueFetchedCallback.valueFetched(null)
@@ -354,6 +372,7 @@ abstract class Cache {
      * needs to be considered stale.(In milliseconds)
      *
      */
+    //TODO converter should be able to handle all objects and not just string.
     fun <Output> get(
         key: String,
         onValueFetchedCallback: OnValueFetchedCallback<Output?>,
@@ -361,11 +380,11 @@ abstract class Cache {
         timeToLive: Long? = null
     ) {
         thread {
-            val cachedData = fetchFromCache(key)
+            val cachedData = ColdStorage.get(key)
             if (cachedData != null) {
                 onValueFetchedCallback.valueFetched(
                     converter
-                        .convert(cachedData.objectToCache)
+                        .convert(cachedData.toString())
                 )
                 return@thread
             }
@@ -373,11 +392,11 @@ abstract class Cache {
             val result = update(key)
             if (result != null) {
                 val cachedDataModel =
-                    CachedDataModel(result, System.currentTimeMillis(), timeToLive)
-                cache[key] = cachedDataModel
+                    ColdStorageModel(result, System.currentTimeMillis(), timeToLive)
+                ColdStorage.cacheMap[key] = cachedDataModel
                 onValueFetchedCallback.valueFetched(
                     converter.convert(
-                        cachedDataModel.objectToCache
+                        cachedDataModel.objectToCache.toString()
                     )
                 )
                 return@thread
@@ -399,11 +418,15 @@ abstract class Cache {
     fun commitToSharedPref(context: Context) {
         val sharedPreferences = context
             .getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
-        trimData()
-        cache.forEach { entry ->
+        ColdStorage.trimData()
+        ColdStorage.cacheMap.forEach { entry ->
             if (!isDataStale(entry.value.timeToLive, entry.value.timestamp)) {
-                val stringValue = objectMapper.writeValueAsString(entry.value)
-                sharedPreferences.edit().putString(entry.key, stringValue).apply()
+                try {
+                    val stringValue = objectMapper.writeValueAsString(entry.value)
+                    sharedPreferences.edit().putString(entry.key, stringValue).apply()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Unable to persist data for key  ${entry.key} to shared pref.")
+                }
             }
         }
     }
@@ -423,53 +446,22 @@ abstract class Cache {
      * if the data is stale.
      */
     fun getWithoutUpdate(key: String, converter: IConverter<Any?>? = null): Any? {
-        if (cache.containsKey(key)) {
+        if (ColdStorage.cacheMap.containsKey(key)) {
             //if data is stale null is returned.
-            if (isDataStale(cache[key]!!.timeToLive, cache[key]!!.timestamp)) {
+            if (isDataStale(
+                    ColdStorage.cacheMap[key]!!.timeToLive,
+                    ColdStorage.cacheMap[key]!!.timestamp
+                )
+            ) {
                 return null
             }
-            val cachedString = cache[key]!!.objectToCache
+            val cachedString = ColdStorage.cacheMap[key]!!.objectToCache
             if (converter != null) {
-                return converter.convert(cachedString)
+                return converter.convert(cachedString.toString())
             }
             return cachedString
         }
         return null
-    }
-
-
-    private fun fetchFromCache(key: String): CachedDataModel? {
-        return if (cache.containsKey(key)) {
-            val cachedDataModel = cache[key]!!
-            if (isDataStale(cachedDataModel.timeToLive, cachedDataModel.timestamp)) {
-                return null
-            }
-            return cachedDataModel
-        } else {
-            null
-        }
-    }
-
-    /**
-     * Method that can be used to cache an object if the get method is not used
-     * directly.This can be used when the data fetching logic cannot be implemented
-     * inside the update method or the cache needs to be updated
-     * from a different async process.
-     *
-     * @param key the key for which the object needs to be cached
-     *
-     * @param objectToCache the object that needs to be cached.This object
-     * should be serializable so that it can be converted to a string.
-     *
-     * @param timeToLive the time after which the object will be considered stale.
-     */
-    @Deprecated("Use the static method in place of this.")
-    fun addToCache(key: String, objectToCache: Any, timeToLive: Long? = null) {
-        val objectAsString = objectMapper.writeValueAsString(objectToCache)
-        cache[key] = CachedDataModel(
-            objectAsString,
-            System.currentTimeMillis(), timeToLive
-        )
     }
 
     /**

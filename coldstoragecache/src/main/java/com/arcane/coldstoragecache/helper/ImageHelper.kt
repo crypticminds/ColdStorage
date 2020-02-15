@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.ValueAnimator
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.widget.ImageView
 import java.net.URL
 
@@ -15,6 +16,8 @@ import java.net.URL
 class ImageHelper {
 
     companion object {
+
+        private const val TAG: String = "IMAGE_HELPER"
 
         /**
          * Method that starts the animation of the imageView.
@@ -74,6 +77,7 @@ class ImageHelper {
                 val input = connection.getInputStream()
                 BitmapFactory.decodeStream(input)
             } catch (e: Exception) {
+                Log.e(TAG, "Image download failed", e)
                 null
             }
         }

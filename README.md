@@ -75,10 +75,14 @@ You can annotate any ImageView present in an Activity , fragement or another vie
 @LoadImage(
         R.id.image_1,
         "https://images.unsplash.com/photo-1549740425-5e9ed4d8cd34?ixlib=rb-1.2.1&w=1000&q=80",
-        placeHolder = R.drawable.loading, enableLoadingAnimation = true
+        placeHolder = R.drawable.loading, enableLoadingAnimation = true, persistImageToDisk = true
     )
     lateinit var imageWithAnimation: ImageView
 ```
+
+Images can be persisted into the internal storage using the "persistImageToDisk" parameter. By default images are not persisted.
+You can specify how long images should be persisted in the disk by passing "timeToLiveForDiskStorage" to the Cache.initialize method.
+By default all data is kept in the disk for upto 2 days.
 
 ### Parameters 
 

@@ -5,6 +5,7 @@ import com.arcane.coldstoragecompiler.helper.CodeGenerationHelper
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import java.io.File
+import java.net.URLDecoder
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
@@ -160,6 +161,11 @@ class LoadImageProcessor : AbstractProcessor() {
             "ImageHelper"
         )
 
+        val storageHelper = ClassName(
+            "com.arcane.coldstoragecache.helper",
+            "StorageHelper"
+        )
+
         val coldStorage = ClassName("com.arcane.coldstoragecache.cache", "ColdStorage")
 
         val bitmap = ClassName("android.graphics", "Bitmap")
@@ -185,10 +191,11 @@ class LoadImageProcessor : AbstractProcessor() {
                 )
                 .addStatement(
                     "map.put($target.${parameter.simpleName}," +
-                            " LoadImageConfig(\"${loadImage.url}\"," +
+                            "LoadImageConfig(\"${URLDecoder.decode(loadImage.url, "UTF-8")}\"," +
                             "${loadImage.placeHolder}, " +
                             "${loadImage.enableLoadingAnimation}," +
-                            "${loadImage.imageViewResourceId}))"
+                            "${loadImage.imageViewResourceId}," +
+                            "${loadImage.persistImageToDisk}))"
                 )
         }
 
@@ -197,10 +204,16 @@ class LoadImageProcessor : AbstractProcessor() {
         return builder.addStatement("map.forEach { entry ->")
             .beginControlFlow("%T.executorService.execute", cacheClass)
             .addStatement("")
+            .addStatement("val imageInDisk = Cache.getStorageHelper().getImageFromDisk(entry.value.url)")
             .beginControlFlow("if(%T.get(entry.value.url) != null)", coldStorage)
             .addStatement(
                 "%T.setImageInView(entry.key,%T.get(entry.value.url) as %T)"
                 , imageHelper, coldStorage, bitmap
+            )
+            .nextControlFlow("else if(imageInDisk != null)")
+            .addStatement(
+                "%T.setImageInView(entry.key,imageInDisk as %T)"
+                , imageHelper, bitmap
             )
             .nextControlFlow("else")
             .addStatement("val animator = %T.animateImageView(entry.key)", imageHelper)
@@ -217,6 +230,9 @@ class LoadImageProcessor : AbstractProcessor() {
             .beginControlFlow("if(bitmap != null)")
             .addStatement("%T.put(entry.value.url,bitmap,null)", coldStorage)
             .addStatement("%T.setImageInView(entry.key,bitmap,animator)", imageHelper)
+            .beginControlFlow("if(entry.value.persistImageToDisk)")
+            .addStatement("Cache.getStorageHelper().persistImagesIntoMemory(entry.value.url,bitmap)")
+            .endControlFlow()
             .endControlFlow()
             .endControlFlow()
             .endControlFlow()

@@ -17,11 +17,13 @@ package com.arcane.coldstorageannotation
  * background and enabling the animation will rotate the image which will give the impression
  * of a circular progress bar.
  *
+ * @param persistImageToDisk Boolean representing whether the images will be persisted in the disk
+ * or not.
+ *
  * TODO : Change height , width of the image
  *
  * TODO : Accept custom animation classes.
  *
- * TODO : Accept boolean to decide whether to store the image to disk for future use.
  *
  * @author Anurag
  */
@@ -35,7 +37,9 @@ annotation class LoadImage(
 
     val placeHolder: Int = -1,
 
-    val enableLoadingAnimation: Boolean = false
+    val enableLoadingAnimation: Boolean = false,
+
+    val persistImageToDisk: Boolean = false
 
 )
 

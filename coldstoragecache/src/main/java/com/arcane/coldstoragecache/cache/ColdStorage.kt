@@ -20,7 +20,7 @@ class ColdStorage {
          * Unlike the Cache class , this cache map can store
          * any object.
          */
-        private val cacheMap: ConcurrentHashMap<String, ColdStorageModel> = ConcurrentHashMap()
+        internal val cacheMap: ConcurrentHashMap<String, ColdStorageModel> = ConcurrentHashMap()
 
         /**
          * TAG for logging.
@@ -56,6 +56,34 @@ class ColdStorage {
         fun put(key: String, value: Any?, timeToLive: Long?) {
             cacheMap[key] = ColdStorageModel(value!!, System.currentTimeMillis(), timeToLive)
             Log.i(TAG, "Putting value in cache")
+            trimData()
+        }
+
+        /**
+         * Method that will remove data from the cache if it exceeds the max in memory size.
+         * The updated data will be stored in shared preferences.
+         * The method only trims on the basis of the object that has been stored and
+         * does not calculate the exact amount of memory occupied by the
+         * cache.
+         */
+        //TODO properly calculate the size of the object.
+        internal fun trimData() {
+            var totalMemory = 0
+            cacheMap.forEach { entry ->
+                // an estimate of the size of the object
+                val sizeOfObject = 36 + (entry.value.objectToCache.toString().length * 2)
+                totalMemory += sizeOfObject
+            }
+            while (totalMemory > Cache.maxAllocateCachedMemory) {
+                val minEntry = cacheMap.minBy { entry -> entry.value.timestamp }
+
+                if (minEntry != null) {
+                    totalMemory -= ((minEntry.value.objectToCache.toString().length * 2) + 36)
+                    cacheMap.remove(minEntry.key)
+                } else {
+                    break
+                }
+            }
         }
 
     }

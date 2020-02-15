@@ -15,7 +15,7 @@ import com.arcane.coldstoragecache.callback.OnValueFetchedCallback
 import com.squareup.picasso.Picasso
 
 /**
- * The mainactivity for the example app.
+ * The main activity for the example app.
  * This shows the example of @LoadImage annotation.
  *
  * @author Anurag
@@ -39,9 +39,10 @@ class MainActivity : AppCompatActivity(), OnValueFetchedCallback<Bitmap?> {
 
     @LoadImage(
         R.id.image_view_2,
-        "https://www.ddfl.org/wp-content/uploads/2018/03/bunnies-easter.png",
+        "https://images.unsplash.com/photo-1485550409059-9afb054cada4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
         R.drawable.test_load,
-        enableLoadingAnimation = true
+        enableLoadingAnimation = true,
+        persistImageToDisk = true
     )
     lateinit var imageView2: ImageView
 
