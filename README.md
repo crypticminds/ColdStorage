@@ -1,5 +1,5 @@
 # ColdStorage 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/946075aa2cc14be3af73eb8a9fc2352b)](https://www.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crypticminds/ColdStorage&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.com/crypticminds/ColdStorage.svg?branch=master)](https://travis-ci.com/crypticminds/ColdStorage)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/946075aa2cc14be3af73eb8a9fc2352b)](https://www.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crypticminds/ColdStorage&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.com/crypticminds/ColdStorage.svg?branch=master)](https://travis-ci.com/crypticminds/ColdStorage) [![Gitter](https://badges.gitter.im/ColdStorageCache/community.svg)](https://gitter.im/ColdStorageCache/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 **A lightweight caching library for android written in Kotlin.**
 
@@ -30,9 +30,9 @@
 
 *  Add the dependencies
 
-        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:4.0.0"  
-        kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:4.0.0"
-    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:4.0.0"
+        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:4.1.0"
+        kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:4.1.0"
+    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:4.1.0"
     
 ***Check the latest release to get the newest features.***
      
@@ -80,19 +80,10 @@ You can annotate any ImageView present in an Activity , fragement or another vie
     lateinit var imageWithAnimation: ImageView
 ```
 
-Images can be persisted into the internal storage using the "persistImageToDisk" parameter. By default images are not persisted.
-You can specify how long images should be persisted in the disk by passing "timeToLiveForDiskStorage" to the Cache.initialize method.
+Images can be persisted into the internal storage using the **"persistImageToDisk"** parameter.
+You can specify how long images should be stored in the disk by passing **"timeToLiveForDiskStorage"** to the **Cache.initialize** method.
 By default all data is kept in the disk for upto 2 days.
 
-### Parameters 
-
-* imageViewResourceId  : The resource id of the image view (Eg R.id.imageView1)
-* url : The url from which the image will be downloaded 
-* placeHolder (optional) : The resource id of a drawable that will be displayed until the image is downloaded.
-* enableLoadingAnimation (optional) : To enable an animation like a rotating loading spinner set this to true. This will
-  only work if a placeholder image has been supplied.
-
- 
 After the image views have been annotated , bind the class where the image views are present using the method
 Cache.bind(objectOfClass).
 
@@ -165,40 +156,18 @@ cacheLayer.makeRemoteCallToServiceB(.... )
 ```
 
 ## @Refrigerate Annotation
-Annotate your functions using this to keep the output of the function in the cache for a given set of inputs .
-
-### For releases > 2.1.0 
-
-Now you can use @CacheKey annotation to declare parameters as the keys of the cache
+Annotate your functions using this to keep the output of the function in the cache for a given set of inputs.
 
 ```kotlin
     @Refrigerate(timeToLive : 2000, operation = "cacheImage")
-    fun downloadImage(@CacheKey url : String , @CacheKey someOtherVariable : String , variableThatIsNotAKey : String) : Bitmap {
+    fun downloadImage(@CacheKey url : String , @CacheKey data : String , variableThatIsNotAKey : String) : Bitmap {
     .....
     }
 ```
+This will keep the bitmap in the cache for 2 seconds.
 
-### For releases < 2.1.0 
-
-If you are using the old version , you will need to use the keys parameter to define your cache keys.
-
-```kotlin
-    @Refrigerate(timeToLive : 2000, operation = "cacheImage" , keys=["url"])
-    fun downloadImage(url : String) : Bitmap {
-    .....
-    }
-```
-This will keep the bitmap in the cache for a unique URL for 2 seconds.
-The **keys** parameter will decide which parameters of the function will be the key of the cache.
-
-```kotlin
-    @Refrigerate(timeToLive : 20000, operation = "remoteServiceCall" , keys=["url","data"])
-        fun callRemoteService(url : String, data : String , someRandomVariable : String) : String {
-        .....
-        }
-```
- In the above example **url** and **data** will together form the key of the cache , such that if it determines that the same url and data is passed to the function (until the value expires in the cache) irrespective of the value of "**someRandomVariable**" it will 
- return the data from the cache. Using the **keys** parameter you can decide which variables should form the key of the cache for the annotated function.
+ In the above example **url** and **data** will together form the key of the cache , such that if it determines that the same url and data is passed to the function (until the value expires in the cache) irrespective of the value of "**variableThatIsNotAKey**" it will 
+ return the data from the cache.
 
 During compilation the annotations will generate a class "**GeneratedCacheLayer**
 and instead of using your annotated functions directly you will use them via this class.
@@ -211,7 +180,7 @@ To invoke the above functions you will call :-
     GeneratedCacheLayer.callRemoteService("myurl", "mydata" , "myrandomVariable" , objectOfTheClassWhereTheMethodBelongs , callback)
 ```
 
-The generated method will have the same name and accept the same variables as the original method but with two extra parameters , one is the object of the class where the original annotated method is present in and the second is the callback (**OnOperationsuccessfulCallback**) which will be used to pass the cached data to the main thread from the background thread. (All cache operations take place on a separate thread). For more information about the usage check the example below or the [article](https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4) 
+The generated method will have the same name and accept the same variables as the original method but with two extra parameters , one is the object of the class where the original annotated method is present in and the second is the callback (**OnOperationsuccessfulCallback**) which will be used to pass the cached data to the main thread from the background thread. (All cache operations take place on a separate thread). Check the [wiki](https://github.com/crypticminds/ColdStorage/wiki/@Refrigerate-annotation) for more details.
 
 > After applying the annotation you can try running your application on AVD so that the GeneratedCacheLayer file is created. Then use it just like
 > a regular class in your project. Your IDE will be able to index it
@@ -276,7 +245,7 @@ The generated method will have the same name and accept the same variables as th
     }
 ```
 
-**The update method should return the value to be cahced in form of a string. If you are planning to store complex objects , serialize them into a string and return them from the method.**
+**The update method should return the value to be cached in form of a string. If you are planning to store complex objects , serialize them into a string and return them from the method.**
 
 Your cache is now ready. To use the cache create an instance of it and call the **get** method of the cache.
 
