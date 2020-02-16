@@ -1,28 +1,28 @@
+
 # ColdStorage 
+<p align="center">
+ <img src="https://i.imgur.com/rEE8hUO.jpg"/>
+</p>
+
+**A lightweight caching library for android**
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/946075aa2cc14be3af73eb8a9fc2352b)](https://www.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crypticminds/ColdStorage&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.com/crypticminds/ColdStorage.svg?branch=master)](https://travis-ci.com/crypticminds/ColdStorage) [![Gitter](https://badges.gitter.im/ColdStorageCache/community.svg)](https://gitter.im/ColdStorageCache/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-**A lightweight caching library for android written in Kotlin.**
+# Quicklinks
 
-![Logo](https://i.imgur.com/rEE8hUO.jpg)
+* [**Feature requests**](https://github.com/crypticminds/ColdStorage/issues/new?assignees=&labels=&template=feature_request.md&title=): Got a new requirement? Request it here and it will be delivered.
+* [**Bugs**](https://github.com/crypticminds/ColdStorage/issues/new?assignees=&labels=&template=bug_report.md&title=): Report a bug  here and it will be squashed.
+* [**Questions**](https://gitter.im/ColdStorageCache/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge): Get your questions about contributing, usage or anything related to the library answered here.
+* [**Examples**](https://github.com/crypticminds/coldstorageexamples) : Check out various examples here.
+* [**Suggestions/Complaints/Feedbacks**](https://github.com/crypticminds/ColdStorage/issues/new): Got something in your mind regarding this library? Please share and help us improve.
+* [**Upcoming features**](https://github.com/crypticminds/ColdStorage/wiki/Upcoming-features) : If you are interested to see all the exciting features lined up for delivery.
 
-## Usage with annotation
-
-> Check the post for an indepth tutorial on how to  use @Refrigerate
-> annotation to cache data :-
-> <https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4>
->
-> Check out the post for usage of @Freeze annotation
-> <https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-3-3d4cfcb57df0>
->
-> Check out the post for usage of @LoadImage annotation
-> <https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-4-18e7b066e9c2>
->
-> Examples can be found here :-
-> <https://github.com/crypticminds/coldstorageexamples>
-
-### For detailed description of each component, usage and examples check the [wiki](https://github.com/crypticminds/ColdStorage/wiki)
-
-## Setup
+# Articles
+* [Caching in general](https://medium.com/@crypticmindscom_5258/caching-made-easy-with-kotlin-part-1-53433c756978)
+* [@Refrigerate annotation usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4)
+* [@Freeze annotation usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-3-3d4cfcb57df0)
+* [@LoadImage anniration usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-4-18e7b066e9c2)
+# Setup
 
 *  Add kotlin-kapt gradle plugin to **app build.gradle** file
 
@@ -36,7 +36,7 @@
     
 ***Check the latest release to get the newest features.***
      
- You need to initialize the cache when the application starts. The initialization takes care of pulling previously cached data and loading them into the memory . 
+ **You need to initialize the cache when the application starts. The initialization takes care of pulling previously cached data and loading them into the memory .** 
  
 *  Create an application class and initialize the cache in the onCreate() method.
  
@@ -50,9 +50,9 @@
             super.onCreate()
             Cache.initialize(context = applicationContext)
 	        }
-    
 	    }
     ```
+	You can configure the cache with additional parameters such as a global time to live, maximum cache size etc. Refer the [wiki]([https://github.com/crypticminds/ColdStorage/wiki/Initialize-cache](https://github.com/crypticminds/ColdStorage/wiki/Initialize-cache)) for more details. 
 
 *  Register your application in the android manifest file by providing the **android:name** attribute
 
@@ -66,8 +66,11 @@
             android:theme="@style/AppTheme"
             android:name=".application.Application">
     </application>
-    ```
-## @LoadImage Annotation (BETA)
+# Quick guide
+
+### This guide will only provide a basic usage guide. For detailed description of each component, usage and examples check the [wiki](https://github.com/crypticminds/ColdStorage/wiki)
+
+## @LoadImage Annotation 
 
 You can annotate any ImageView present in an Activity , fragement or another view to load images from an URL and cache it for future use.
 
@@ -81,15 +84,12 @@ You can annotate any ImageView present in an Activity , fragement or another vie
 ```
 
 Images can be persisted into the internal storage using the **"persistImageToDisk"** parameter.
-You can specify how long images should be stored in the disk by passing **"timeToLiveForDiskStorage"** to the **Cache.initialize** method.
-By default all data is kept in the disk for upto 2 days.
 
-After the image views have been annotated , bind the class where the image views are present using the method
-Cache.bind(objectOfClass).
+After the image views have been annotated , bind the class where the image views are present using the method **Cache.bind(object).**
 
 You can pass the activity, fragement or the view to which the annotated ImageViews belong to.
-In an activity, the method should be called after setContentView and in a fragemnt it should be called
-in onViewCreated method.
+
+In an activity, the method should be called after setContentView and in a fragemnt it should be called in **onViewCreated** method.
 
 ```kotlin
      override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +103,7 @@ Currently the cache can only be bound to an Activity , fragment or view.
 
 ## @Freeze Annotation
 
-Annotate your class using the freeze annotation to apply caching logic on top of all the methods present in the class.
+Annotate your class using the freeze annotation to apply caching logic on top of all the public methods present in the class.
 
 ```kotlin
 @Freeze(generatedClassName = "MyBeautifulCacheLayer")
@@ -132,11 +132,8 @@ class MakeRemoteCallWithFreeze {
     }
 }
 ```
-
-This will generate a class called "MyBeautifulCacheLayer" . You can use this class to call the methods.
-
+This will generate a class called "**MyBeautifulCacheLayer**" . You can use this class to call the methods.
 ```kotlin 
-
 //you need to implement the OnOperationSuccessfulCallback interface.
 val callback = object : OnOperationSuccessfulCallback<String>{
         override fun onSuccess(output: String?, operation: String) {
@@ -154,9 +151,8 @@ cacheLayer.makeRemoteCallToServiceA("someString" , callback)
 cacheLayer.makeRemoteCallToServiceB(.... )
 
 ```
-
 ## @Refrigerate Annotation
-Annotate your functions using this to keep the output of the function in the cache for a given set of inputs.
+Annotate your functions with refrigerate to cache the output of the function for a given set of inputs.
 
 ```kotlin
     @Refrigerate(timeToLive : 2000, operation = "cacheImage")
@@ -180,15 +176,9 @@ To invoke the above functions you will call :-
     GeneratedCacheLayer.callRemoteService("myurl", "mydata" , "myrandomVariable" , objectOfTheClassWhereTheMethodBelongs , callback)
 ```
 
-The generated method will have the same name and accept the same variables as the original method but with two extra parameters , one is the object of the class where the original annotated method is present in and the second is the callback (**OnOperationsuccessfulCallback**) which will be used to pass the cached data to the main thread from the background thread. (All cache operations take place on a separate thread). Check the [wiki](https://github.com/crypticminds/ColdStorage/wiki/@Refrigerate-annotation) for more details.
-
-> After applying the annotation you can try running your application on AVD so that the GeneratedCacheLayer file is created. Then use it just like
-> a regular class in your project. Your IDE will be able to index it
-> after it is generated and you will be able see the parameters the generated functions will accept. The generated file will change when you change your annotated functions.
-
+The generated method will have the same name and accept the same variables as the original method but with two extra parameters , one is the object of the class where the original annotated method is present in and the second is the callback (**OnOperationsuccessfulCallback**) which will be used to pass the cached data to the main thread from the background thread.
 
 ## Create a custom cache layer
-
 
  Create your cache layer by extending the **Cache class**. You will have to implement the update method.
  The update method should take care of fetching the data when the data is stale or is not present in the cache.
@@ -334,8 +324,24 @@ Optionally you can also pass a time to live value and a converter. They are expl
 
 **The converter object takes care of deserializing the string into the object you need. It is an optional parameter. If the converter is not passed the cache will return the value as string.**
 
-## Other usage
+# License
+```
+Copyright 2020 Anurag Mandal
 
-*  You can update the cache manually using the **addToCache** method. Use this method if you need to update the cache from a sperate async task . You will need to pass the key , and the value (the value needs to be serializable). You can also pass an optional time to live value.
-*  You can persist your application cache into the shared preferences for future use by calling the method **commitToSharedPref** .
-*  You can fetch the data from cache without it internally calling the update method if the data is stale or missing by using the method **getWithoutUpdate** . If you are using this method then you do not have to implement the update method of your cache. You will also have to manually fetch the data and update the cache using **addToCache** method when there is a cache miss.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+## Author
+
+Anurag Mandal  [LinkedIn]( https://www.linkedin.com/in/anurag-mandal-86a65b164/)
+
