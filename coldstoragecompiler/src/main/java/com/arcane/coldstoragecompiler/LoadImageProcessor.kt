@@ -1,6 +1,7 @@
 package com.arcane.coldstoragecompiler
 
 import com.arcane.coldstorageannotation.LoadImage
+import com.arcane.coldstorageannotation.Parent
 import com.arcane.coldstoragecompiler.helper.CodeGenerationHelper
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
@@ -183,12 +184,24 @@ class LoadImageProcessor : AbstractProcessor() {
         //  .beginControlFlow("$activityName.runOnUiThread  ")
         parameterList.forEach { parameter ->
             val loadImage = parameter.getAnnotation(LoadImage::class.java)
+            val parent = parameter.getAnnotation(Parent::class.java)
+
+            if (parent != null) {
+                builder
+                    .addStatement(
+                        "$target.${parameter.simpleName} = " +
+                                "%T.bindViewToResource($target ," +
+                                "${parent.resourceId}," +
+                                "${loadImage.imageViewResourceId})", bindHelper)
+            } else {
+                builder
+                    .addStatement(
+                        "$target.${parameter.simpleName} = " +
+                                "%T.bindViewToResource($target ," +
+                                " ${loadImage.imageViewResourceId})", bindHelper
+                    )
+            }
             builder
-                .addStatement(
-                    "$target.${parameter.simpleName} = " +
-                            "%T.bindViewToResource($target ," +
-                            " ${loadImage.imageViewResourceId})", bindHelper
-                )
                 .addStatement(
                     "map.put($target.${parameter.simpleName}," +
                             "LoadImageConfig(\"${URLDecoder.decode(loadImage.url, "UTF-8")}\"," +

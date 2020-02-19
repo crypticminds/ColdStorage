@@ -4,7 +4,7 @@
  <img src="https://i.imgur.com/rEE8hUO.jpg"/>
 </p>
 
-**A lightweight caching library for android**
+**A lightweight data loading and caching library for android**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![Downloads](https://jitpack.io/v/crypticminds/ColdStorage/month.svg) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/946075aa2cc14be3af73eb8a9fc2352b)](https://www.codacy.com/manual/crypticminds/ColdStorage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=crypticminds/ColdStorage&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.com/crypticminds/ColdStorage.svg?branch=master)](https://travis-ci.com/crypticminds/ColdStorage) [![Gitter](https://badges.gitter.im/ColdStorageCache/community.svg)](https://gitter.im/ColdStorageCache/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -21,7 +21,7 @@
 * [Caching in general](https://medium.com/@crypticmindscom_5258/caching-made-easy-with-kotlin-part-1-53433c756978)
 * [@Refrigerate annotation usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-in-android-with-kotlin-part-2-61bb476063b4)
 * [@Freeze annotation usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-3-3d4cfcb57df0)
-* [@LoadImage anniration usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-4-18e7b066e9c2)
+* [@LoadImage annotation usage](https://medium.com/@crypticmindscom_5258/caching-made-easy-on-android-with-kotlin-part-4-18e7b066e9c2)
 # Setup
 
 *  Add kotlin-kapt gradle plugin to **app build.gradle** file
@@ -30,9 +30,9 @@
 
 *  Add the dependencies
 
-        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:4.1.0"
-        kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:4.1.0"
-    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:4.1.0"
+        implementation "com.github.crypticminds.ColdStorage:coldstoragecache:4.1.1"
+        kapt "com.github.crypticminds.ColdStorage:coldstoragecompiler:4.1.1"
+    	implementation "com.github.crypticminds.ColdStorage:coldstorageannotation:4.1.1"
     
 ***Check the latest release to get the newest features.***
      
@@ -100,6 +100,29 @@ In an activity, the method should be called after setContentView and in a fragem
 ```
 
 Currently the cache can only be bound to an Activity , fragment or view.
+
+## @Parent Annotation
+
+An annotation that helps binding a nested view to a resource id.
+Suppose you have a layout ** layout_1.xml ** which contains an ImageView. You have added this layout in your main layout using the
+** <include/> ** tag.You can now use @LoadImage annotation on the ImageView by :
+
+* Provide an id to the include tag
+
+    ```xml
+    <include android:id="@+id/my_included_layout"
+    ......
+    other attributes
+    />
+    ```
+
+* Use Parent annotation along with LoadImage annotation
+
+    ```kotlin
+        @Parent(R.id.my_included_layout)
+        @LoadImage(R.id.my_nested_image_view,"http://url.jpg"
+        lateinit var childImageView : ImageView
+    ```
 
 ## @Freeze Annotation
 
